@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -56,11 +57,24 @@ def main():
     ap.add_argument("--stage", choices=["eda", "compare", "assign", "all"], default="all")
     ap.add_argument("--contamination", type=float, default=0.05)
     ap.add_argument("--model", default="iforest")
+    ap.add_argument("--novelty", action="store_true",
+                    help="LOF: refit with novelty=True so the model can predict on new data.")
+    ap.add_argument("--group-col", default=None,
+                    help="Emit per-group anomaly-rate (LEAD-030).")
+    ap.add_argument("--sensitive-features", default="",
+                    help="Record protected-attribute columns in a note.")
     args = ap.parse_args()
 
     out = Path(args.output_dir); out.mkdir(parents=True, exist_ok=True)
     (out / "artifacts").mkdir(exist_ok=True); (out / "results").mkdir(exist_ok=True)
     plotting.set_style()
+
+    sensitive = [c.strip() for c in args.sensitive_features.split(",") if c.strip()]
+    if not sensitive and not args.group_col:
+        print("WARNING: no --sensitive-features or --group-col passed. Anomaly "
+              "detection on uncurated data can encode historical discrimination. "
+              "Consider whether protected attributes exist in your dataset.",
+              flush=True)
 
     df = pd.read_csv(args.data)
     X, feat_names = _prep(df)
@@ -98,8 +112,33 @@ def main():
     top = out_df.sort_values("anomaly_score").head(20)
     top.to_csv(out / "results/top_anomalies.csv", index=False)
 
-    if not isinstance(model, LocalOutlierFactor):
-        joblib.dump(model, out / "model.joblib")
+    if args.group_col and args.group_col in df.columns:
+        per = (out_df.groupby(args.group_col)["is_anomaly"]
+               .agg(["sum", "mean", "count"])
+               .rename(columns={"sum": "n_anomalies", "mean": "anomaly_rate",
+                                "count": "n"}))
+        per.to_csv(out / "results/subgroup_anomaly_rate.csv")
+
+    if isinstance(model, LocalOutlierFactor):
+        if args.novelty:
+            novelty_model = LocalOutlierFactor(
+                n_neighbors=model.n_neighbors,
+                contamination=args.contamination,
+                novelty=True,
+            ).fit(X)
+            joblib.dump(novelty_model, out / "model.joblib")
+        else:
+            (out / "load_hint.json").write_text(json.dumps({
+                "model": "LocalOutlierFactor",
+                "note": "LOF without novelty=True cannot predict on new data. "
+                        "Pass --novelty at training time to enable serialization + new-data prediction.",
+                "contamination": args.contamination,
+            }, indent=2))
+    else:
+        try:
+            joblib.dump(model, out / "model.joblib")
+        except Exception as e:
+            print(f"WARNING: serialization failed for {args.model}: {e}", flush=True)
 
     print(f"Done. Outputs in {out.resolve()}")
 
