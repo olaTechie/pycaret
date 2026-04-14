@@ -115,7 +115,8 @@ def compare_models(X_train, y_train, out: Path, cv: int = 5) -> pd.DataFrame:
     return leaderboard
 
 
-def tune_model(model_id: str, X_train, y_train, out: Path, n_iter: int = 20):
+def tune_model(model_id: str, X_train, y_train, out: Path,
+               n_iter: int = 20, search_library: str = "sklearn"):
     zoo = model_zoo.get_zoo()
     entry = zoo[model_id]
     pre = preprocessing.build_preprocessor(X_train)
@@ -125,8 +126,29 @@ def tune_model(model_id: str, X_train, y_train, out: Path, n_iter: int = 20):
         pipe.fit(X_train, y_train)
         return pipe, None
 
-    # Count combinations; cap n_iter
-    import itertools
+    # Resolve shared modules in both in-place and staged layouts.
+    try:
+        from _shared import deps as _deps
+        from _shared.tuning_optuna import optuna_search as _optuna_search
+    except ImportError:
+        from references._shared import deps as _deps
+        from references._shared.tuning_optuna import optuna_search as _optuna_search
+
+    if search_library == "optuna" and not _deps.has_optuna():
+        print("WARNING: --search-library optuna requested but optuna is "
+              "not installed; falling back to RandomizedSearchCV.", flush=True)
+        search_library = "sklearn"
+
+    if search_library == "optuna":
+        best, best_score, best_params = _optuna_search(
+            pipe, grid, X_train, y_train,
+            scoring="accuracy", cv=5, n_iter=n_iter, random_state=42,
+        )
+        with open(out / "results/best_params.json", "w") as f:
+            json.dump({k: str(v) for k, v in best_params.items()}, f, indent=2)
+        return best, best_score
+
+    # Default: RandomizedSearchCV.
     max_combos = 1
     for v in grid.values():
         max_combos *= len(v)
@@ -191,6 +213,10 @@ def main():
     ap.add_argument("--stage", choices=["eda", "compare", "tune", "evaluate", "all"], default="all")
     ap.add_argument("--cv", type=int, default=5)
     ap.add_argument("--model", default=None, help="Model id for --stage tune (defaults to top of leaderboard)")
+    ap.add_argument("--search-library", choices=["sklearn", "optuna"], default="sklearn",
+                    help="Tuning backend. 'optuna' requires the optuna package.")
+    ap.add_argument("--n-iter", type=int, default=20,
+                    help="Number of tuning iterations.")
     args = ap.parse_args()
 
     out = Path(args.output_dir)
@@ -218,7 +244,10 @@ def main():
 
     best_model = None
     if args.stage in ("tune", "all") and best_model_id:
-        best_model, score = tune_model(best_model_id, X_train, y_train, out)
+        best_model, score = tune_model(
+            best_model_id, X_train, y_train, out,
+            n_iter=args.n_iter, search_library=args.search_library,
+        )
         print(f"Tuned {best_model_id}: CV score = {score}")
 
     if args.stage in ("evaluate", "all") and best_model is not None:

@@ -1,10 +1,19 @@
 """Stager + end-to-end copy-and-run tests for every reference script."""
+import os
 import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 STAGER = REPO_ROOT / "scripts/stage_session.py"
+
+try:
+    import optuna  # noqa: F401
+    _HAS_OPTUNA = True
+except ImportError:
+    _HAS_OPTUNA = False
 
 
 def _run_stager(task: str, dest: Path) -> subprocess.CompletedProcess:
@@ -45,3 +54,49 @@ def test_stager_refuses_unknown_task(tmp_path):
     assert r.returncode != 0
     msg = (r.stderr + r.stdout).lower()
     assert "unknown task" in msg or "invalid choice" in msg
+
+
+@pytest.mark.skipif(not _HAS_OPTUNA, reason="optuna not installed")
+def test_optuna_tune_runs_end_to_end(classification_data, tmp_path):
+    """Stage classify, run tune stage with --search-library optuna, verify best_params written."""
+    dest = tmp_path / "mlt"
+    out = tmp_path / "out"
+    _run_stager("classify", dest).check_returncode()
+    r = subprocess.run(
+        [sys.executable, str(dest / "session.py"),
+         "--data", classification_data["path"],
+         "--target", classification_data["target"],
+         "--output-dir", str(out),
+         "--stage", "all",
+         "--search-library", "optuna",
+         "--n-iter", "5"],
+        capture_output=True, text=True,
+    )
+    assert r.returncode == 0, f"stderr: {r.stderr}"
+    assert (out / "results/best_params.json").exists()
+
+
+def test_optuna_fallback_warns_when_missing(classification_data, tmp_path):
+    """When optuna is not importable, requesting it warns and falls back to sklearn."""
+    dest = tmp_path / "mlt"
+    out = tmp_path / "out"
+    _run_stager("classify", dest).check_returncode()
+
+    stub_dir = tmp_path / "stub"
+    stub_dir.mkdir()
+    (stub_dir / "optuna.py").write_text("raise ImportError('forced for test')\n")
+    env = {**os.environ, "PYTHONPATH": f"{stub_dir}{os.pathsep}{dest}"}
+
+    # Seed best_model_id via a --stage all compare first? Simpler: use a model the zoo has.
+    r = subprocess.run(
+        [sys.executable, str(dest / "session.py"),
+         "--data", classification_data["path"],
+         "--target", classification_data["target"],
+         "--output-dir", str(out),
+         "--stage", "all",
+         "--search-library", "optuna",
+         "--n-iter", "3"],
+        capture_output=True, text=True, env=env,
+    )
+    assert r.returncode == 0, f"stderr: {r.stderr}"
+    assert "falling back" in (r.stdout + r.stderr).lower()
