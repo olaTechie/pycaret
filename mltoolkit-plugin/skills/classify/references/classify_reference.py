@@ -473,12 +473,25 @@ def main():
     ap.add_argument("--ensemble", choices=["none", "voting", "stacking"], default="none",
                     help="Build an ensemble from the top-K leaderboard models (LEAD-037).")
     ap.add_argument("--ensemble-k", type=int, default=3)
+    ap.add_argument("--finalize", action="store_true",
+                    help="Refit best model on X_train ∪ X_test (LEAD-019).")
+    ap.add_argument("--track", choices=["none", "mlflow"], default="none",
+                    help="Experiment tracking backend (LEAD-033).")
     args = ap.parse_args()
     sensitive = [c.strip() for c in args.sensitive_features.split(",") if c.strip()]
 
     out = Path(args.output_dir)
     (out / "results").mkdir(parents=True, exist_ok=True)
     (out / "artifacts").mkdir(parents=True, exist_ok=True)
+
+    if args.track == "mlflow":
+        try:
+            import mlflow
+            mlflow.set_experiment("mltoolkit")
+            mlflow.autolog()
+        except ImportError:
+            print("WARNING: --track mlflow requested but mlflow is not installed.",
+                  flush=True)
 
     df = load_data(args.data, args.target)
     X = df.drop(columns=[args.target])
@@ -557,6 +570,18 @@ def main():
                                         "holdout_accuracy": ens_score}, indent=2))
                     except Exception as e:
                         print(f"WARNING: ensemble failed: {e}", flush=True)
+
+    # Finalize: refit on full dataset.
+    if args.finalize and best_model is not None:
+        import datetime as _dt
+        final_model = best_model
+        final_model.fit(X, y)
+        joblib.dump(final_model, out / "model_final.joblib")
+        (out / "results/finalize_note.json").write_text(json.dumps({
+            "note": "Fit on X_train ∪ X_test (full dataset). Do NOT re-evaluate on holdout.",
+            "n_rows": int(len(X)),
+            "timestamp": _dt.datetime.now(_dt.timezone.utc).isoformat(),
+        }, indent=2))
 
     # Reproducibility manifest.
     try:
