@@ -137,6 +137,25 @@ def test_staged_anomaly_runs_end_to_end(anomaly_data, tmp_path):
     assert r.returncode == 0, f"stderr: {r.stderr}"
 
 
+def test_setup_emits_datasheet(classification_data, tmp_path):
+    dest = tmp_path / "mlt"
+    out = tmp_path / "out"
+    _run_stager("setup", dest).check_returncode()
+    r = subprocess.run(
+        [sys.executable, str(dest / "session.py"),
+         "--data", classification_data["path"],
+         "--target", classification_data["target"],
+         "--output-dir", str(out)],
+        capture_output=True, text=True,
+    )
+    assert r.returncode == 0, r.stderr
+    ds = out / "datasheet.md"
+    assert ds.exists()
+    text = ds.read_text()
+    for heading in ("Provenance", "Consent", "Protected attributes"):
+        assert heading in text
+
+
 def test_optuna_fallback_warns_when_missing(classification_data, tmp_path):
     """When optuna is not importable, requesting it warns and falls back to sklearn."""
     dest = tmp_path / "mlt"

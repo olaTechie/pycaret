@@ -17,6 +17,43 @@ sys.path.insert(0, str(_PLUGIN_ROOT))
 from references._shared import plotting  # noqa: E402
 
 
+_DATASHEET_TEMPLATE = """# Datasheet — mltoolkit session
+
+Fill this file in before the classify/regress skill trains any model.
+
+## Provenance
+- **Source**: <where did this data come from?>
+- **Collection date(s)**: <range>
+- **Sampling**: <convenience / random / census / other>
+
+## Consent & ethics
+- **IRB / ethics approval**: <IRB number or 'exempt' or 'not applicable'>
+- **Consent basis**: <broad / specific / waiver / public>
+- **PHI / PII**: <present / none / de-identified>
+
+## Protected attributes
+List every column that encodes or proxies for a protected attribute
+(race, ethnicity, sex, gender, age band, zip code, religion,
+disability, national origin, pregnancy, sexual orientation):
+
+- `<col_name>` — <reason protected>
+
+Pass these as `--sensitive-features col1,col2,...` to classify / regress
+so the plugin refuses to target-encode them and emits per-group metrics.
+
+## Known limitations
+- <dataset bias, coverage gaps, measurement issues>
+"""
+
+
+def write_datasheet(out: Path) -> Path:
+    out.mkdir(parents=True, exist_ok=True)
+    p = out / "datasheet.md"
+    if not p.exists():
+        p.write_text(_DATASHEET_TEMPLATE)
+    return p
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--data", required=True)
@@ -57,6 +94,9 @@ def main():
             df[args.target].value_counts().plot(kind="bar", ax=ax)
             ax.set_title(f"Target distribution — {args.target} (categorical)")
         plotting.save_fig(fig, out / "artifacts/target_distribution"); plt.close(fig)
+
+    ds = write_datasheet(out)
+    print(f"Datasheet scaffold: {ds} — fill it in before training.")
 
     print(f"\nDone. Artifacts in {out.resolve()}")
 
