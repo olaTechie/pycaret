@@ -9,9 +9,10 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, StandardScaler
 
 _HERE = Path(__file__).resolve()
-_ROOT = _HERE.parents[3]
-if str(_ROOT) not in sys.path:
-    sys.path.insert(0, str(_ROOT))
+_PLUGIN_ROOT = _HERE.parents[3]
+if str(_PLUGIN_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PLUGIN_ROOT))
+
 from references._shared import deps  # noqa: E402
 
 
