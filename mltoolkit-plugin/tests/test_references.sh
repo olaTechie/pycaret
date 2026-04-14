@@ -12,7 +12,16 @@ echo "=== mltoolkit reference smoke tests ==="
 echo
 
 echo "[1/5] Shared helpers..."
-python -m pytest tests/test_shared.py -q
+python -m pytest tests/test_shared.py \
+                 tests/test_shared_bootstrap.py \
+                 tests/test_shared_splits.py \
+                 tests/test_shared_fairness.py \
+                 tests/test_shared_calibration.py \
+                 tests/test_shared_encoders_safe.py \
+                 tests/test_shared_epv.py \
+                 tests/test_shared_table1.py \
+                 tests/test_shared_decision_curve.py \
+                 -q
 
 echo
 echo "[2/5] Classify reference..."
