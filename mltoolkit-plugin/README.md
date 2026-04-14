@@ -18,7 +18,7 @@ Standalone machine learning plugin for Claude Code. Generates native Python code
 - xgboost, lightgbm, catboost — adds more models to the zoo
 - imblearn — SMOTE for class imbalance
 - category_encoders — TargetEncoder for high-cardinality features
-- optuna — alternative hyperparameter search backend
+- optuna — alternative hyperparameter search backend (enable via `--search-library optuna` in the tune stage)
 - plotly — interactive exploration plots
 
 ## Skills

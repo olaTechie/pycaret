@@ -17,10 +17,15 @@ allowed-tools:
 ## Workflow
 
 1. **Confirm model id** with user (from leaderboard).
-2. **Run tune stage**: `python .mltoolkit/session.py --data <DATA> --target <TARGET> --output-dir .mltoolkit --stage tune --model <ID>`
+2. **Run tune stage**: `python .mltoolkit/session.py --data <DATA> --target <TARGET> --output-dir .mltoolkit --stage tune --model <ID> [--search-library optuna] [--n-iter 50]`
 3. **Present `best_params.json`** and the new CV score.
 4. If the tuned score is not better than the untuned CV score, mention that and offer to try another model or expand the grid (edit `session.py` accordingly).
 
-## Optuna support
+## Search backends
 
-If `optuna` is installed, the generated session can be edited to use `optuna` instead of `RandomizedSearchCV`. Propose this when user asks for more aggressive tuning.
+The tune stage accepts `--search-library {sklearn,optuna}`.
+
+- `sklearn` (default) uses `RandomizedSearchCV` with `--n-iter` trials.
+- `optuna` uses a TPE sampler (requires the `optuna` package). If requested but optuna is not installed, the script prints a warning and transparently falls back to `sklearn`.
+
+Both backends write `results/best_params.json` with identical schema.
