@@ -137,6 +137,47 @@ def test_staged_anomaly_runs_end_to_end(anomaly_data, tmp_path):
     assert r.returncode == 0, f"stderr: {r.stderr}"
 
 
+def test_staged_classify_paper_mode_end_to_end(classification_data, tmp_path):
+    """Stage classify + run with every paper-mode flag; verify every new artifact."""
+    import pandas as pd
+    df = pd.read_csv(classification_data["path"])
+    df["group"] = [i % 4 for i in range(len(df))]
+    data_path = tmp_path / "paper.csv"
+    df.to_csv(data_path, index=False)
+
+    dest = tmp_path / "mlt"
+    out = tmp_path / "out"
+    _run_stager("classify", dest).check_returncode()
+    r = subprocess.run(
+        [sys.executable, str(dest / "session.py"),
+         "--data", str(data_path), "--target", "target",
+         "--output-dir", str(out), "--stage", "all",
+         "--cv", "3", "--n-iter", "5",
+         "--group-col", "group",
+         "--calibrate", "sigmoid",
+         "--optimize-threshold", "youden",
+         "--decision-curve",
+         "--bootstrap", "100"],
+        capture_output=True, text=True,
+    )
+    assert r.returncode == 0, r.stderr
+    for artifact in [
+        "results/leaderboard.csv",
+        "results/leaderboard_folds.csv",
+        "results/epv_audit.json",
+        "results/table1.csv",
+        "results/calibration.json",
+        "results/threshold.json",
+        "results/subgroup_metrics.csv",
+        "results/fairness_disparities.json",
+        "results/holdout_metrics_ci.json",
+    ]:
+        assert (out / artifact).exists(), f"missing {artifact}"
+    assert list((out / "artifacts").glob("reliability*"))
+    assert list((out / "artifacts").glob("decision_curve*"))
+    assert list((out / "artifacts").glob("learning_curve*"))
+
+
 def test_setup_emits_datasheet(classification_data, tmp_path):
     dest = tmp_path / "mlt"
     out = tmp_path / "out"

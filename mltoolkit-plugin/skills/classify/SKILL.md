@@ -60,6 +60,25 @@ When user asks to:
 - **"tune more"** → re-run tune with higher `--n-iter` (may require editing the script).
 - **"handle imbalance"** → edit `session.py` to wrap estimator in `imblearn.pipeline.Pipeline` with SMOTE.
 
+## Paper-mode flags
+
+These flags turn the plugin into a TRIPOD+AI-grade reporting toolkit. Defaults preserve original behavior.
+
+| Flag | Effect | Output |
+|---|---|---|
+| `--group-col <col>` | Route CV through GroupKFold / StratifiedGroupKFold. | per-fold scores + subgroup_metrics.csv |
+| `--time-col <col>` | TimeSeriesSplit. | per-fold |
+| `--sensitive-features a,b,c` | Plugin refuses to target-encode these. Use with `--group-col` for subgroup metrics when the group is a protected attribute. | |
+| `--allow-target-encode-on-sensitive` | Override the refusal (record rationale in `datasheet.md`). | |
+| `--imputation {simple,iterative,knn,drop}` | Imputer class. | missingness.png |
+| `--resample {smote,adasyn}` | imblearn over-sampling before fit. | |
+| `--calibrate {sigmoid,isotonic}` | Wrap final model in CalibratedClassifierCV. | calibration.json, reliability.png |
+| `--optimize-threshold {youden,f1,mcc,fixed-recall} --fixed-recall 0.80` | Pick operating point. | threshold.json |
+| `--decision-curve` | Vickers 2006 net-benefit plot. | decision_curve.png |
+| `--bootstrap N` | N-sample percentile CI on holdout metrics. | holdout_metrics_ci.json |
+
+Fill out `.mltoolkit/datasheet.md` (from setup) with protected-attribute column names and pass them via `--sensitive-features`.
+
 ## When to hand off to package
 
 Prompt the user to package once:
