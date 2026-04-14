@@ -2,12 +2,18 @@
 import sys
 from pathlib import Path
 
+from sklearn.discriminant_analysis import (
+    LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis,
+)
+from sklearn.dummy import DummyClassifier
 from sklearn.ensemble import (
     AdaBoostClassifier, ExtraTreesClassifier, GradientBoostingClassifier,
     RandomForestClassifier,
 )
-from sklearn.linear_model import LogisticRegression, RidgeClassifier
-from sklearn.naive_bayes import GaussianNB
+from sklearn.linear_model import (
+    LogisticRegression, PassiveAggressiveClassifier, RidgeClassifier,
+)
+from sklearn.naive_bayes import BernoulliNB, GaussianNB, MultinomialNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
@@ -82,6 +88,33 @@ def get_zoo() -> dict:
                            "alpha": [0.0001, 0.001]},
             "requires": None,
         },
+        "qda": {
+            "estimator": QuadraticDiscriminantAnalysis(),
+            "param_grid": {"reg_param": [0.0, 0.1, 0.5]},
+            "requires": None,
+        },
+        "lda": {
+            "estimator": LinearDiscriminantAnalysis(solver="lsqr"),
+            "param_grid": {"shrinkage": [None, "auto", 0.1, 0.5]},
+            "requires": None,
+        },
+        "dummy": {
+            "estimator": DummyClassifier(strategy="stratified", random_state=42),
+            "param_grid": {},
+            "requires": None,
+        },
+        "par": {
+            "estimator": PassiveAggressiveClassifier(random_state=42, n_jobs=-1),
+            "param_grid": {"C": [0.1, 1.0, 10.0]},
+            "requires": None,
+        },
+        "bnb": {
+            "estimator": BernoulliNB(),
+            "param_grid": {"alpha": [0.1, 1.0, 10.0]},
+            "requires": None,
+        },
+        # MultinomialNB requires non-negative features. Not registered by default;
+        # users can add it manually when they have count/TF-IDF features.
     }
     if deps.has_xgboost():
         import xgboost as xgb

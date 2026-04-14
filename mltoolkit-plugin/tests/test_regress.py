@@ -5,6 +5,18 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
+sys.path.insert(0, str(REPO_ROOT / "skills/regress/references"))
+
+import model_zoo as regress_zoo  # noqa: E402
+
+
+def test_regress_model_zoo_has_expanded_entries():
+    zoo = regress_zoo.get_zoo()
+    for mid in ["lr", "ridge", "lasso", "en", "huber", "ransac", "theilsen",
+                "br", "ard", "omp", "lassolars", "llars_ic", "dummy"]:
+        assert mid in zoo, f"missing regress model: {mid}"
+        assert "estimator" in zoo[mid]
+        assert "param_grid" in zoo[mid]
 
 
 def test_regress_reference_runs_end_to_end(regression_data, tmp_path):

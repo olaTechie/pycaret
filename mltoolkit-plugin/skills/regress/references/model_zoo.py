@@ -2,11 +2,16 @@
 import sys
 from pathlib import Path
 
+from sklearn.dummy import DummyRegressor
 from sklearn.ensemble import (
     AdaBoostRegressor, ExtraTreesRegressor, GradientBoostingRegressor,
     RandomForestRegressor,
 )
-from sklearn.linear_model import ElasticNet, Lasso, LinearRegression, Ridge
+from sklearn.linear_model import (
+    ARDRegression, BayesianRidge, ElasticNet, HuberRegressor, Lasso,
+    LassoLars, LassoLarsIC, LinearRegression, OrthogonalMatchingPursuit,
+    RANSACRegressor, Ridge, TheilSenRegressor,
+)
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.neural_network import MLPRegressor
 from sklearn.svm import SVR
@@ -50,6 +55,22 @@ def get_zoo() -> dict:
         "mlp":   {"estimator": MLPRegressor(max_iter=500, random_state=42),
                   "param_grid": {"hidden_layer_sizes": [(50,), (100,), (100, 50)]},
                   "requires": None},
+        "lassolars": {"estimator": LassoLars(random_state=42, max_iter=5000),
+                      "param_grid": {"alpha": [0.001, 0.01, 0.1]}, "requires": None},
+        "llars_ic":  {"estimator": LassoLarsIC(criterion="bic", max_iter=5000),
+                      "param_grid": {}, "requires": None},
+        "omp":       {"estimator": OrthogonalMatchingPursuit(),
+                      "param_grid": {"n_nonzero_coefs": [5, 10, 20]}, "requires": None},
+        "br":        {"estimator": BayesianRidge(), "param_grid": {}, "requires": None},
+        "ard":       {"estimator": ARDRegression(), "param_grid": {}, "requires": None},
+        "huber":     {"estimator": HuberRegressor(max_iter=500),
+                      "param_grid": {"epsilon": [1.1, 1.35, 1.5]}, "requires": None},
+        "ransac":    {"estimator": RANSACRegressor(random_state=42),
+                      "param_grid": {}, "requires": None},
+        "theilsen":  {"estimator": TheilSenRegressor(random_state=42, n_jobs=-1),
+                      "param_grid": {}, "requires": None},
+        "dummy":     {"estimator": DummyRegressor(strategy="mean"),
+                      "param_grid": {}, "requires": None},
     }
     if deps.has_xgboost():
         import xgboost as xgb

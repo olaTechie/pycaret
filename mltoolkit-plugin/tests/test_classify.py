@@ -21,7 +21,8 @@ def test_build_preprocessor_on_mixed_df(classification_data):
 
 def test_model_zoo_has_core_entries():
     zoo = model_zoo.get_zoo()
-    for mid in ["lr", "ridge", "knn", "dt", "rf", "et", "gbc", "ada", "svc", "nb", "mlp"]:
+    for mid in ["lr", "ridge", "knn", "dt", "rf", "et", "gbc", "ada", "svc", "nb",
+                "mlp", "qda", "lda", "dummy", "par", "bnb"]:
         assert mid in zoo, f"Missing core model: {mid}"
         entry = zoo[mid]
         assert "estimator" in entry
