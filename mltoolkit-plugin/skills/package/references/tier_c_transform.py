@@ -2,11 +2,25 @@
 import argparse
 import shutil
 import sys
+from importlib.metadata import PackageNotFoundError, version as _pkg_version
 from pathlib import Path
 
-# Tier_b_transform is a sibling file; add parent to path so we can import it.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from tier_b_transform import detect_imports  # noqa: E402
+
+
+def _pin(pkg: str) -> str:
+    """Return `pkg==X.Y.Z` if installed, else bare `pkg` (LEAD-034).
+
+    Passes through lines that already have a version specifier (e.g. base_reqs
+    entries like `fastapi>=0.100`).
+    """
+    if any(c in pkg for c in "=<>!"):
+        return pkg
+    try:
+        return f"{pkg}=={_pkg_version(pkg)}"
+    except PackageNotFoundError:
+        return pkg
 
 
 SCAFFOLD_DIR = Path(__file__).parent / "tier_c_scaffold"
@@ -33,7 +47,8 @@ def transform(session_path: Path, output_dir: Path, name: str, task: str,
     if not with_api:
         base_reqs -= {"fastapi", "uvicorn", "pydantic"}
     all_reqs = sorted(base_reqs | detected)
-    (output_dir / "requirements.txt").write_text("\n".join(all_reqs) + "\n")
+    pinned = sorted({_pin(r) for r in all_reqs})
+    (output_dir / "requirements.txt").write_text("\n".join(pinned) + "\n")
 
     readme_lines = [
         f"# {name}",

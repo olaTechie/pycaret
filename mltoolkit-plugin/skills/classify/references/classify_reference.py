@@ -586,12 +586,81 @@ def main():
     # Reproducibility manifest.
     try:
         from _shared.run_manifest import build_manifest, write_manifest
+        from _shared.methods_md import render_methods
+        from _shared.model_card import render_model_card
+        from _shared import checklists as _checklists
     except ImportError:
         from references._shared.run_manifest import build_manifest, write_manifest
-    write_manifest(out / "results", build_manifest(
+        from references._shared.methods_md import render_methods
+        from references._shared.model_card import render_model_card
+        from references._shared import checklists as _checklists
+    manifest = build_manifest(
         stage=args.stage, args_dict=vars(args),
         extra={"best_model_id": best_model_id, "sensitive": sensitive},
-    ))
+    )
+    write_manifest(out / "results", manifest)
+
+    # Paper scaffolds: methods.md, model_card.md, TRIPOD+AI checklist.
+    if args.stage in ("evaluate", "all"):
+        holdout_metrics = {}
+        holdout_ci = {}
+        calibration = {}
+        fairness_disparities = {}
+        for name, target in [
+            ("calibration.json", "calibration"),
+            ("holdout_metrics_ci.json", "holdout_ci"),
+            ("fairness_disparities.json", "fairness_disparities"),
+        ]:
+            p = out / "results" / name
+            if p.exists():
+                data = json.loads(p.read_text())
+                if target == "calibration":
+                    calibration = data
+                elif target == "holdout_ci":
+                    holdout_ci = data
+                else:
+                    fairness_disparities = data
+        ctx = dict(
+            data_source="(fill in from datasheet.md)",
+            n_rows=len(df), n_features=df.shape[1] - 1,
+            prevalence=float(y.mean()) if hasattr(y, 'mean') else None,
+            imputation=args.imputation,
+            preprocessing="StandardScaler+OneHot(+TargetEncoder if non-sensitive high-card)",
+            resampling=args.resample,
+            split_strategy="stratified group/time" if args.group_col or args.time_col else "stratified random",
+            cv=args.cv,
+            zoo_ids=list(model_zoo.get_zoo().keys()),
+            tuning=f"{args.search_library} with n_iter={args.n_iter}",
+            holdout_metrics=holdout_metrics,
+            holdout_ci=holdout_ci,
+            fairness_disparities=fairness_disparities,
+            calibration=calibration,
+            packages=manifest["packages"],
+            python_version=manifest["python_version"],
+            timestamp_utc=manifest["timestamp_utc"],
+        )
+        reports = out / "reports"; reports.mkdir(exist_ok=True)
+        (reports / "methods.md").write_text(render_methods(ctx))
+        (reports / "model_card.md").write_text(render_model_card({
+            **ctx, "name": "mltoolkit classifier",
+            "task": "classification", "algorithm": best_model_id,
+        }))
+        (reports / "tripod_ai_checklist.md").write_text(_checklists.tripod_ai_checklist())
+
+        # summary_report.html — capstone.
+        try:
+            tables = {}
+            lb_path = out / "results/leaderboard.csv"
+            if lb_path.exists():
+                tables["Leaderboard"] = pd.read_csv(lb_path)
+            figures = [str(p) for p in sorted((out / "artifacts").glob("*.png"))]
+            reporting.summary_report(
+                title="mltoolkit classification — summary",
+                tables=tables, figures=figures,
+                output=out / "results/summary_report.html",
+            )
+        except Exception as e:
+            print(f"WARNING: summary_report failed: {e}", flush=True)
 
     print(f"Done. Outputs in {out.resolve()}")
 

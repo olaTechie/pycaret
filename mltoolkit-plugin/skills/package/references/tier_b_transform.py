@@ -2,7 +2,16 @@
 import argparse
 import ast
 import re
+from importlib.metadata import PackageNotFoundError, version as _pkg_version
 from pathlib import Path
+
+
+def _pin(pkg: str) -> str:
+    """Return `pkg==X.Y.Z` if installed, else bare `pkg` (LEAD-034)."""
+    try:
+        return f"{pkg}=={_pkg_version(pkg)}"
+    except PackageNotFoundError:
+        return pkg
 
 _PYPI_MAP = {
     "sklearn": "scikit-learn",
@@ -49,10 +58,10 @@ def transform(session_path: Path, output_dir: Path, name: str, task: str) -> dic
     script.write_text(content)
 
     reqs = detect_imports(content)
-    # scipy is stdlib-adjacent but used in regress reference — add explicitly
     if "scipy" in content:
         reqs.add("scipy")
-    (output_dir / "requirements.txt").write_text("\n".join(sorted(reqs)) + "\n")
+    pinned = sorted(_pin(r) for r in reqs)
+    (output_dir / "requirements.txt").write_text("\n".join(pinned) + "\n")
 
     template_path = Path(__file__).parent / "tier_b_readme_template.md"
     readme = template_path.read_text().format(name=name, task=task, target=target)
