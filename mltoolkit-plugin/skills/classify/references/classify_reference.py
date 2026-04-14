@@ -217,7 +217,30 @@ def main():
                     help="Tuning backend. 'optuna' requires the optuna package.")
     ap.add_argument("--n-iter", type=int, default=20,
                     help="Number of tuning iterations.")
+    ap.add_argument("--group-col", default=None,
+                    help="Column name for Group/StratifiedGroup K-fold (LEAD-006).")
+    ap.add_argument("--time-col", default=None,
+                    help="Column name for TimeSeriesSplit (parseable by pd.to_datetime).")
+    ap.add_argument("--sensitive-features", default="",
+                    help="Comma-separated column names treated as protected attributes.")
+    ap.add_argument("--allow-target-encode-on-sensitive", action="store_true",
+                    help="Override the refusal to target-encode sensitive columns.")
+    ap.add_argument("--imputation", choices=["simple", "iterative", "knn", "drop"],
+                    default="simple")
+    ap.add_argument("--resample", choices=["none", "smote", "adasyn"], default="none",
+                    help="Imbalanced-class resampling (requires imblearn).")
+    ap.add_argument("--calibrate", choices=["none", "sigmoid", "isotonic"], default="none",
+                    help="Wrap final model in CalibratedClassifierCV.")
+    ap.add_argument("--optimize-threshold",
+                    choices=["none", "youden", "f1", "mcc", "fixed-recall"],
+                    default="none")
+    ap.add_argument("--fixed-recall", type=float, default=0.80,
+                    help="Target recall for --optimize-threshold=fixed-recall.")
+    ap.add_argument("--decision-curve", action="store_true")
+    ap.add_argument("--bootstrap", type=int, default=0,
+                    help="Bootstrap iterations for holdout CI. 0 disables.")
     args = ap.parse_args()
+    sensitive = [c.strip() for c in args.sensitive_features.split(",") if c.strip()]
 
     out = Path(args.output_dir)
     out.mkdir(parents=True, exist_ok=True)
