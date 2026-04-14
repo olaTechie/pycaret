@@ -138,6 +138,14 @@ def main():
             except (TypeError, PicklingError) as e:
                 print(f"WARNING: serialization failed for {best}: {e}", flush=True)
 
+    try:
+        from _shared.run_manifest import build_manifest, write_manifest
+    except ImportError:
+        from references._shared.run_manifest import build_manifest, write_manifest
+    write_manifest(out / "results", build_manifest(
+        stage=args.stage, args_dict=vars(args),
+    ))
+
     print(f"Done. Outputs in {out.resolve()}")
 
 

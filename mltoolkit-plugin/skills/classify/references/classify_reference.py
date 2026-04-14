@@ -558,6 +558,16 @@ def main():
                     except Exception as e:
                         print(f"WARNING: ensemble failed: {e}", flush=True)
 
+    # Reproducibility manifest.
+    try:
+        from _shared.run_manifest import build_manifest, write_manifest
+    except ImportError:
+        from references._shared.run_manifest import build_manifest, write_manifest
+    write_manifest(out / "results", build_manifest(
+        stage=args.stage, args_dict=vars(args),
+        extra={"best_model_id": best_model_id, "sensitive": sensitive},
+    ))
+
     print(f"Done. Outputs in {out.resolve()}")
 
 
