@@ -76,6 +76,67 @@ def test_optuna_tune_runs_end_to_end(classification_data, tmp_path):
     assert (out / "results/best_params.json").exists()
 
 
+def test_staged_classify_runs_end_to_end(classification_data, tmp_path):
+    dest = tmp_path / "mlt"
+    out = tmp_path / "out"
+    _run_stager("classify", dest).check_returncode()
+    r = subprocess.run(
+        [sys.executable, str(dest / "session.py"),
+         "--data", classification_data["path"],
+         "--target", classification_data["target"],
+         "--output-dir", str(out),
+         "--stage", "all"],
+        capture_output=True, text=True,
+    )
+    assert r.returncode == 0, f"stderr: {r.stderr}"
+    assert (out / "results/leaderboard.csv").exists()
+    assert (out / "model.joblib").exists()
+
+
+def test_staged_regress_runs_end_to_end(regression_data, tmp_path):
+    dest = tmp_path / "mlt"
+    out = tmp_path / "out"
+    _run_stager("regress", dest).check_returncode()
+    r = subprocess.run(
+        [sys.executable, str(dest / "session.py"),
+         "--data", regression_data["path"],
+         "--target", regression_data["target"],
+         "--output-dir", str(out),
+         "--stage", "all"],
+        capture_output=True, text=True,
+    )
+    assert r.returncode == 0, f"stderr: {r.stderr}"
+    assert (out / "results/leaderboard.csv").exists()
+
+
+def test_staged_cluster_runs_end_to_end(cluster_data, tmp_path):
+    dest = tmp_path / "mlt"
+    out = tmp_path / "out"
+    _run_stager("cluster", dest).check_returncode()
+    r = subprocess.run(
+        [sys.executable, str(dest / "session.py"),
+         "--data", cluster_data["path"],
+         "--output-dir", str(out),
+         "--stage", "all"],
+        capture_output=True, text=True,
+    )
+    assert r.returncode == 0, f"stderr: {r.stderr}"
+
+
+def test_staged_anomaly_runs_end_to_end(anomaly_data, tmp_path):
+    dest = tmp_path / "mlt"
+    out = tmp_path / "out"
+    _run_stager("anomaly", dest).check_returncode()
+    r = subprocess.run(
+        [sys.executable, str(dest / "session.py"),
+         "--data", anomaly_data["path"],
+         "--output-dir", str(out),
+         "--stage", "all"],
+        capture_output=True, text=True,
+    )
+    assert r.returncode == 0, f"stderr: {r.stderr}"
+
+
 def test_optuna_fallback_warns_when_missing(classification_data, tmp_path):
     """When optuna is not importable, requesting it warns and falls back to sklearn."""
     dest = tmp_path / "mlt"
