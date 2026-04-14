@@ -1,0 +1,17 @@
+{
+  "name": "mltoolkit",
+  "version": "0.1.0",
+  "description": "Standalone ML plugin — generates native Python code (sklearn + optional boosters) for classification, regression, clustering, and anomaly detection. No PyCaret dependency.",
+  "skills": [
+    "skills/setup",
+    "skills/classify",
+    "skills/regress",
+    "skills/cluster",
+    "skills/anomaly",
+    "skills/compare",
+    "skills/tune",
+    "skills/eda",
+    "skills/package"
+  ],
+  "agents": ["agents/ml-pipeline.md"]
+}
