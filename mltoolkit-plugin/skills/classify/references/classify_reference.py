@@ -27,7 +27,8 @@ import seaborn as sns
 from sklearn.inspection import permutation_importance
 from sklearn.metrics import (
     RocCurveDisplay, PrecisionRecallDisplay, classification_report,
-    confusion_matrix, make_scorer,
+    cohen_kappa_score, confusion_matrix, make_scorer,
+    matthews_corrcoef,
 )
 from sklearn.model_selection import (
     RandomizedSearchCV, cross_validate, train_test_split, learning_curve,
@@ -226,8 +227,13 @@ def compare_models(X_train, y_train, df, out: Path, args, sensitive) -> pd.DataF
         "accuracy": "accuracy",
         "f1": "f1_macro" if n_classes > 2 else "f1",
     }
+    scorers["balanced_accuracy"] = "balanced_accuracy"
+    scorers["mcc"] = make_scorer(matthews_corrcoef)
+    scorers["kappa"] = make_scorer(cohen_kappa_score)
     if n_classes == 2:
         scorers["roc_auc"] = "roc_auc"
+        scorers["average_precision"] = "average_precision"
+        scorers["neg_log_loss"] = "neg_log_loss"
         scorers["ppv_at_recall_80"] = make_scorer(_ppv_at_recall, needs_proba=True)
         scorers["spec_at_recall_80"] = make_scorer(_spec_at_recall, needs_proba=True)
 
@@ -464,6 +470,9 @@ def main():
     ap.add_argument("--fixed-recall", type=float, default=0.80)
     ap.add_argument("--decision-curve", action="store_true")
     ap.add_argument("--bootstrap", type=int, default=0)
+    ap.add_argument("--ensemble", choices=["none", "voting", "stacking"], default="none",
+                    help="Build an ensemble from the top-K leaderboard models (LEAD-037).")
+    ap.add_argument("--ensemble-k", type=int, default=3)
     args = ap.parse_args()
     sensitive = [c.strip() for c in args.sensitive_features.split(",") if c.strip()]
 
@@ -512,6 +521,42 @@ def main():
             best_model.fit(X_train, y_train)
         evaluate(best_model, X_train, y_train, X_test, y_test, df, out, args, sensitive)
         joblib.dump(best_model, out / "model.joblib")
+
+        if args.ensemble != "none":
+            lb_path = out / "results/leaderboard.csv"
+            if lb_path.exists():
+                lb_df = pd.read_csv(lb_path)
+                top_ids = lb_df["model"].head(args.ensemble_k).tolist()
+                zoo = model_zoo.get_zoo()
+                pre = _preprocessor(X_train, args, sensitive)
+                base_estimators = [
+                    (mid, _pipeline(pre, zoo[mid]["estimator"], resample=args.resample))
+                    for mid in top_ids if mid in zoo
+                ]
+                if len(base_estimators) >= 2:
+                    if args.ensemble == "voting":
+                        from sklearn.ensemble import VotingClassifier
+                        ens = VotingClassifier(
+                            estimators=base_estimators, voting="soft", n_jobs=-1)
+                    else:
+                        from sklearn.ensemble import StackingClassifier
+                        from sklearn.linear_model import LogisticRegression
+                        ens = StackingClassifier(
+                            estimators=base_estimators,
+                            final_estimator=LogisticRegression(max_iter=1000),
+                            n_jobs=-1,
+                        )
+                    try:
+                        ens.fit(X_train, y_train)
+                        joblib.dump(ens, out / "model_ensemble.joblib")
+                        ens_preds = ens.predict(X_test)
+                        ens_score = float((ens_preds == y_test).mean())
+                        (out / "results/ensemble_score.json").write_text(
+                            json.dumps({"ensemble_kind": args.ensemble,
+                                        "members": top_ids,
+                                        "holdout_accuracy": ens_score}, indent=2))
+                    except Exception as e:
+                        print(f"WARNING: ensemble failed: {e}", flush=True)
 
     print(f"Done. Outputs in {out.resolve()}")
 
