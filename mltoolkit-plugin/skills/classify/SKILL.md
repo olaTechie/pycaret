@@ -26,7 +26,9 @@ allowed-tools:
 
 1. **Read the reference script** at `{SKILL_DIR}/references/classify_reference.py` so you know its stages.
 2. **Create `.mltoolkit/` if missing** in the user's CWD and add to `.gitignore`.
-3. **Copy the reference** to `.mltoolkit/session.py` (use Write tool).
+3. **Stage the reference bundle** into `.mltoolkit/`:
+   `python {PLUGIN_ROOT}/scripts/stage_session.py --task classify --dest .mltoolkit`
+   This copies `classify_reference.py` as `session.py`, plus the sibling modules (`preprocessing.py`, `model_zoo.py`) and the `_shared/` package, all co-located so the script runs standalone.
 4. **Run EDA stage**:
    `python .mltoolkit/session.py --data <DATA> --target <TARGET> --output-dir .mltoolkit --stage eda`
 5. **Read and present** `.mltoolkit/results/schema.csv` and the generated figures in `.mltoolkit/artifacts/`.

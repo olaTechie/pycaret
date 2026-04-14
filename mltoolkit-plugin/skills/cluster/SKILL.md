@@ -22,7 +22,9 @@ allowed-tools:
 ## Workflow
 
 1. Read reference script.
-2. Copy to `.mltoolkit/session.py`.
+2. **Stage the reference bundle** into `.mltoolkit/`:
+   `python {PLUGIN_ROOT}/scripts/stage_session.py --task cluster --dest .mltoolkit`
+   This copies `cluster_reference.py` as `session.py`, plus `model_zoo.py` and the `_shared/` package, co-located.
 3. Run EDA — elbow plot for choosing k:
    `python .mltoolkit/session.py --data <DATA> --output-dir .mltoolkit --stage eda`
 4. Read elbow plot from `.mltoolkit/artifacts/elbow.png` — suggest a k to the user.

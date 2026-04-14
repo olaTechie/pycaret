@@ -24,7 +24,9 @@ allowed-tools:
 
 1. Read `{SKILL_DIR}/references/regress_reference.py`.
 2. Ensure `.mltoolkit/` exists in user's CWD (gitignored).
-3. Copy the reference to `.mltoolkit/session.py`.
+3. **Stage the reference bundle** into `.mltoolkit/`:
+   `python {PLUGIN_ROOT}/scripts/stage_session.py --task regress --dest .mltoolkit`
+   This copies `regress_reference.py` as `session.py`, plus sibling modules (`preprocessing.py`, `model_zoo.py`) and the `_shared/` package, co-located.
 4. Run EDA:
    `python .mltoolkit/session.py --data <DATA> --target <TARGET> --output-dir .mltoolkit --stage eda`
 5. Show target distribution + correlation heatmap from `.mltoolkit/artifacts/`.

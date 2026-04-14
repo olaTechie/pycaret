@@ -22,7 +22,9 @@ allowed-tools:
 ## Workflow
 
 1. Read reference.
-2. Copy to `.mltoolkit/session.py`.
+2. **Stage the reference bundle** into `.mltoolkit/`:
+   `python {PLUGIN_ROOT}/scripts/stage_session.py --task anomaly --dest .mltoolkit`
+   This copies `anomaly_reference.py` as `session.py`, plus `model_zoo.py` and the `_shared/` package, co-located.
 3. Ask user for expected contamination rate (default 5%).
 4. Run compare with contamination:
    `python .mltoolkit/session.py --data <DATA> --output-dir .mltoolkit --stage compare --contamination 0.05`
