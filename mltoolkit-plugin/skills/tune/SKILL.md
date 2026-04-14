@@ -21,6 +21,14 @@ allowed-tools:
 3. **Present `best_params.json`** and the new CV score.
 4. If the tuned score is not better than the untuned CV score, mention that and offer to try another model or expand the grid (edit `session.py` accordingly).
 
+## CLI flags (classify + regress)
+
+| Flag | Purpose | Default |
+|---|---|---|
+| `--n-iter <int>` | Number of tuning iterations (RandomizedSearchCV n_iter; Optuna n_trials). | 20 |
+| `--search-library {sklearn,optuna}` | Backend selection. | sklearn |
+| `--cv <int>` | Fold count for CV-during-tune. | 5 |
+
 ## Search backends
 
 The tune stage accepts `--search-library {sklearn,optuna}`.
