@@ -28,3 +28,21 @@ def get_base_scorer_class() -> Type:
             "Tried sklearn.metrics._scorer._BaseScorer. "
             "Add a fallback path in pycaret/utils/_sklearn_compat.py."
         ) from e
+
+
+@lru_cache(maxsize=1)
+def get_check_reg_targets():
+    """Return sklearn's `_check_reg_targets` function regardless of location.
+
+    sklearn 1.5/1.6/1.7 keep it at sklearn.metrics._regression._check_reg_targets.
+    Add fallback paths here if a future sklearn relocates it.
+    """
+    try:
+        from sklearn.metrics._regression import _check_reg_targets
+        return _check_reg_targets
+    except ImportError as e:
+        raise ImportError(
+            "pycaret-ng could not locate sklearn's _check_reg_targets. "
+            "Tried sklearn.metrics._regression._check_reg_targets. "
+            "Add a fallback path in pycaret/utils/_sklearn_compat.py."
+        ) from e
