@@ -12,7 +12,7 @@ Every run emits: leaderboard, per-fold scores, calibration, bootstrap CIs, subgr
 
 ```bash
 # Inside a Claude Code session:
-/plugin marketplace add olaTechie/pycaret
+/plugin marketplace add olaTechie/mltoolkit-plugin
 /plugin install mltoolkit@olaTechie
 ```
 
@@ -27,9 +27,9 @@ You should see `mltoolkit:setup`, `mltoolkit:classify`, `mltoolkit:regress`, `ml
 ### Option B — Local clone (for development / forking)
 
 ```bash
-git clone https://github.com/olaTechie/pycaret.git
-cd pycaret
-claude --plugin-dir ./mltoolkit-plugin
+git clone https://github.com/olaTechie/mltoolkit-plugin.git
+cd mltoolkit-plugin
+claude --plugin-dir .
 ```
 
 ### Option C — Per-repo pin
@@ -41,8 +41,7 @@ Inside a project that will use the plugin, create `.claude/plugins.json`:
   "plugins": [
     {
       "name": "mltoolkit",
-      "source": "github:olaTechie/pycaret",
-      "path": "mltoolkit-plugin"
+      "source": "github:olaTechie/mltoolkit-plugin"
     }
   ]
 }
@@ -51,8 +50,8 @@ Inside a project that will use the plugin, create `.claude/plugins.json`:
 ### Verify
 
 ```bash
-bash mltoolkit-plugin/scripts/check-env.sh
-bash mltoolkit-plugin/tests/test_references.sh   # optional: 67-test smoke suite
+bash scripts/check-env.sh
+bash tests/test_references.sh   # optional: 67-test smoke suite
 ```
 
 ---
@@ -282,7 +281,7 @@ Pass `--diagnostic` or `--interventional` at package time (future) to additional
 ## Testing
 
 ```bash
-bash mltoolkit-plugin/tests/test_references.sh
+bash tests/test_references.sh
 ```
 
 Expected: five steps, 67 tests green.
@@ -290,11 +289,11 @@ Expected: five steps, 67 tests green.
 Individual test files:
 
 ```bash
-pytest mltoolkit-plugin/tests/test_shared_bootstrap.py
-pytest mltoolkit-plugin/tests/test_shared_fairness.py
-pytest mltoolkit-plugin/tests/test_shared_calibration.py
-pytest mltoolkit-plugin/tests/test_shared_run_manifest.py
-pytest mltoolkit-plugin/tests/test_stage_and_run.py   # end-to-end copy + execute
+pytest tests/test_shared_bootstrap.py
+pytest tests/test_shared_fairness.py
+pytest tests/test_shared_calibration.py
+pytest tests/test_shared_run_manifest.py
+pytest tests/test_stage_and_run.py   # end-to-end copy + execute
 ```
 
 ---
