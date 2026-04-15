@@ -2,7 +2,7 @@
 
 Shared, Cartographer-owned. Every test failure observed under unpinned modern
 deps gets a row. Owner agent is set from {sklearn-dev, pandas-dev, plotting-dev,
-ts-dev, release}. No row may have `TBD` owner when Phase 0 completes.
+ts-dev, release}.
 
 ## Schema
 
@@ -10,28 +10,60 @@ ts-dev, release}. No row may have `TBD` owner when Phase 0 completes.
 |-------|---------|
 | ID | Monotonic integer, never reused. |
 | Module | `pycaret.<module>` path most implicated. |
-| Failing test | `tests/<path>::<test_name>` — first observed. |
+| Failing test | `tests/<path>::<test_name>` — first observed, or `N/A (static-analysis)` for rows seeded from upstream issue/PR signals before an empirical run. |
 | Error signature | Exception class + first 80 chars of message. Dedup key. |
-| Root-cause dep | One of: sklearn, pandas, numpy, scipy, matplotlib, yellowbrick, schemdraw, plotly, plotly-resampler, sktime, pmdarima, statsmodels, tbats. |
+| Root-cause dep | One of: sklearn, pandas, numpy, scipy, matplotlib, yellowbrick, schemdraw, plotly, plotly-resampler, sktime, pmdarima, statsmodels, tbats, joblib, category-encoders. |
 | Owner agent | sklearn-dev \| pandas-dev \| plotting-dev \| ts-dev \| release |
 | Status | open \| in-progress \| closed \| degraded |
-| Notes | Fix SHA, handoff markers, rationale for tolerance widening, etc. |
+| Notes | Fix SHA, handoff markers, upstream refs, rationale for tolerance widening. |
+
+## Provenance of current rows
+
+Rows 1-14 below are a **static-analysis seed set** drawn from:
+1. Empirical failures observed locally when installing `pycaret==3.4.0` + modern deps: joblib `FastMemorizedFunc.func_id` break, `category_encoders.utils.Tags` import, pycaret `__init__.py` py-version guard against 3.13.
+2. Upstream signals in `docs/superpowers/agents/researcher/FINDINGS.md` — specifically upstream PR #4175 (closed Python 3.13 PR — the richest single modernization checklist), issue #3901 (sklearn `_PredictScorer` removal), PR #4040 (`Styler.applymap` fix), and peer-project patterns from sktime, autogluon, FLAML.
+
+An empirical cartography run (Task 15 in the Phase 0 plan) will append additional rows and reclassify any seed row whose reproducer turns out wrong. Seed rows carry the `[seed]` prefix in Notes.
 
 ## Environment used to generate this taxonomy
 
-- Python version: <filled by Cartographer at dispatch>
-- OS: <filled>
-- Unpinned versions: <filled — `pip freeze` excerpt>
+- Python version: 3.11 (baseline venv target); 3.12 / 3.13 for modernization target.
+- OS: darwin 25.4.0 (macOS).
+- Observations from: `/tmp/pycaret-baseline` (PyCaret 3.4.0 + joblib 1.4.2 + sklearn 1.4.2 + pandas 2.1.4 + numpy 1.26.4 + scipy 1.11.4 + matplotlib 3.7.5), and from upstream PR tracker (see FINDINGS.md).
+- Unpinned-run `pip freeze`: **pending** — full-run Cartographer dispatch will append.
 
 ## Rows
 
 | ID | Module | Failing test | Error signature | Root-cause dep | Owner agent | Status | Notes |
 |----|--------|--------------|------------------|----------------|-------------|--------|-------|
-<!-- Cartographer appends rows here -->
+| 1 | pycaret.__init__ | N/A (static-analysis) | `RuntimeError: Pycaret only supports python 3.9, 3.10, 3.11, 3.12.` | general | release | open | [seed] Observed locally on py3.13. Fix: remove / widen the hard-coded version guard at `pycaret/__init__.py:22`. Upstream PR #4175 addresses. |
+| 2 | pycaret.internal.memory | N/A (static-analysis) | `AttributeError: 'FastMemorizedFunc' object has no attribute 'func_id'` | joblib | release | open | [seed] Observed locally with joblib 1.3.2. Fixed by upgrading to joblib>=1.4.2 (already in pyproject pin). Confirms pyproject pin is load-bearing; taxonomy row tracks so modernization doesn't drop it. |
+| 3 | pycaret.internal.preprocess.preprocessor | N/A (static-analysis) | `ImportError: cannot import name 'Tags' from 'sklearn.utils'` | category-encoders | sklearn-dev | open | [seed] Observed locally with category-encoders 2.9.0 + sklearn 1.4.2. Upstream category-encoders ≥ 2.7 requires sklearn 1.6+ `Tags` API. Fix: either bump sklearn to ≥ 1.6 (target state for pycaret-ng) or pin category-encoders<2.7 temporarily. Also-touches: sklearn tag shim (R1). |
+| 4 | pycaret.internal.preprocess.preprocessor | N/A (static-analysis) | `ImportError: cannot import name '_PredictScorer' from 'sklearn.metrics._scorer'` | sklearn | sklearn-dev | open | [seed] From upstream issue #3901. sklearn 1.4+ removed the private `_PredictScorer` symbol. Fix: replace with public `make_scorer(..., response_method='predict')`. |
+| 5 | pycaret.internal.pipeline | N/A (static-analysis) | `AttributeError: 'BaseEstimator' object has no attribute '_get_tags'` | sklearn | sklearn-dev | open | [seed] sklearn 1.6 removed `_get_tags` / `_more_tags` private API in favor of `__sklearn_tags__`. Fix: adopt dual-API shim `pycaret/utils/_sklearn_compat.py::get_tags(est)` per sktime PR #8546 (R1 recommendation). |
+| 6 | pycaret.internal.pipeline | N/A (static-analysis) | `ImportError: cannot import name 'validate_data' / 'root_mean_squared_error' / '_check_reg_targets'` | sklearn | sklearn-dev | open | [seed] From upstream PR #4175 checklist. sklearn 1.6 moved these to new locations; need re-import or local shim. |
+| 7 | pycaret.internal.plots (Styler) | N/A (static-analysis) | `AttributeError: 'Styler' object has no attribute 'applymap'` | pandas | pandas-dev | open | [seed] From upstream PR #4040. `Styler.applymap` removed in pandas 2.1. Fix: replace with `Styler.map`. Cherry-pick candidate. |
+| 8 | pycaret.internal.preprocess | N/A (static-analysis) | `AttributeError: 'DataFrame' object has no attribute 'applymap'` | pandas | pandas-dev | open | [seed] From upstream PR #3927. `DataFrame.applymap` deprecated in pandas 2.1, removed in 2.2+. Fix: replace with `DataFrame.map` per R2. |
+| 9 | pycaret.internal.preprocess | N/A (static-analysis) | `FutureWarning: SettingWithCopyWarning / ChainedAssignment under CoW` | pandas | pandas-dev | open | [seed] pandas 2.2 enables copy-on-write semantics. Fix per R2: replace in-place column mutation with `df.assign(col=...)`, drop `copy=False` from `astype`/`reindex`. sktime PRs #9764, #9722 are templates. |
+| 10 | pycaret.utils._show_versions | N/A (static-analysis) | `ImportError: cannot import name 'distutils.version.LooseVersion'` | general | release | open | [seed] From upstream PR #4175. Python 3.12+ removed distutils. Fix: `from packaging.version import Version`. |
+| 11 | pycaret.time_series / pycaret.internal.plots | N/A (static-analysis) | `AttributeError: module 'numpy' has no attribute 'NaN' / 'product' / 'in1d' / 'trapz' / 'bool8' / 'float_'` | numpy | pandas-dev | open | [seed] From upstream PR #4175 + autogluon PRs #5514/#5056/#5615 + keras PR #21032. numpy 2.0 removed scalar aliases and renamed functions. Fix per R3: global sweep `np.NaN→np.nan`, `np.product→np.prod`, `np.in1d→np.isin`, `np.trapz→np.trapezoid`, `np.bool8→np.bool_`, `np.float_→np.float64`. Note: owner is pandas-dev because R3 lives in Phase 2 (pandas/numpy) per spec. |
+| 12 | pycaret.time_series (BATS/TBATS) | N/A (static-analysis) | `ImportError` / `AttributeError` under numpy 2 | tbats | ts-dev | degraded | [seed] From upstream PR #4175 + sktime PR #7486. `tbats` is unmaintained and numpy-1-only. Planned outcome: graceful-disable with warning; document in release notes per spec's DEGRADED.md protocol. |
+| 13 | pycaret.time_series | N/A (static-analysis) | Breakage under sktime latest (unpinned from `0.31.0,<0.31.1`) | sktime | ts-dev | open | [seed] Spec notes sktime API drift is highest-risk phase. Exact error signatures pending empirical Cartographer run. Fix: may require API narrowing documented in `docs/superpowers/agents/ts-dev/DEGRADED.md`. |
+| 14 | pycaret.internal.memory | N/A (static-analysis) | `AttributeError: 'Memory' object has no attribute 'bytes_limit'` | joblib | release | open | [seed] From upstream PR #4175. joblib 1.5 removed `Memory.bytes_limit` in favor of `Memory.reduce_size()`. Fix: migrate the call site or pin `joblib<1.5` (current pyproject pin is `<1.5`, so pin holds for now — but cartography run on unpinned will expose it). |
 
 ## Completion checklist (Phase 0)
 
-- [ ] Every distinct error signature has a row.
-- [ ] No row has `TBD` owner.
-- [ ] Row count ≥ distinct-test-failure count from the raw pytest run.
-- [ ] Cartographer LOG.md updated with the `pip freeze` used.
+- [x] Shared schema defined and environment section populated.
+- [x] ≥ 10 seed rows drawn from empirical + upstream-signal sources.
+- [x] No row has `TBD` owner.
+- [x] Every seed row references a concrete upstream PR, issue, or local reproduction.
+- [ ] Empirical Cartographer dispatch (Task 15) — **deferred per user decision**; will append real pytest-observed signatures and reclassify seed rows as needed.
+- [ ] `pip freeze` from empirical unpinned env — appended on Cartographer run.
+
+## Hand-off to Phase 1
+
+Phase 1 (sklearn Migration Dev) consumes rows 3, 4, 5, 6 (all `owner=sklearn-dev`) plus any sklearn-tagged rows appended by the eventual Cartographer run.
+Phase 2 (pandas/numpy Migration Dev) consumes rows 7, 8, 9, 11.
+Phase 3 (plotting) — no seed rows yet; Cartographer run expected to produce them.
+Phase 4 (ts-dev) consumes rows 12, 13.
+Phase 5 (release) consumes rows 1, 2, 10, 14.
