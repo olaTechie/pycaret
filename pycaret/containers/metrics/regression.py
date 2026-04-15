@@ -13,7 +13,9 @@ from typing import Any, Dict, Optional, Union
 import numpy as np
 from sklearn import metrics
 from sklearn.metrics._regression import _check_reg_targets
-from sklearn.metrics._scorer import _BaseScorer
+from pycaret.utils._sklearn_compat import get_base_scorer_class
+
+_BaseScorer = get_base_scorer_class()
 from sklearn.utils.validation import check_consistent_length
 
 import pycaret.containers.base_container

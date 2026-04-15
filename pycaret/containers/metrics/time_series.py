@@ -13,7 +13,9 @@ from typing import Any, Dict, Optional, Union
 import numpy as np
 import pandas as pd
 from sklearn import metrics  # type: ignore
-from sklearn.metrics._scorer import _BaseScorer  # type: ignore
+from pycaret.utils._sklearn_compat import get_base_scorer_class
+
+_BaseScorer = get_base_scorer_class()
 from sktime.performance_metrics.forecasting._functions import (  # type: ignore
     mean_absolute_percentage_error,
     mean_absolute_scaled_error,
