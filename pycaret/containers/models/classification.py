@@ -873,7 +873,11 @@ class QuadraticDiscriminantAnalysisContainer(ClassifierContainer):
         np.random.seed(experiment.seed)
         from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 
-        args = {}
+        # sklearn >=1.8 raises LinAlgError on rank-deficient class covariances
+        # where earlier versions silently regularised. Set a small reg_param
+        # default so the default-args path is numerically stable on small /
+        # collinear datasets; tune_grid still explores reg_param=[0..1].
+        args = {"reg_param": 0.1}
         tune_args = {}
         tune_grid = {"reg_param": np_list_arange(0, 1, 0.01, inclusive=True)}
         tune_distributions = {"reg_param": UniformDistribution(0, 1)}
