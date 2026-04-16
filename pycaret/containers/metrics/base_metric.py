@@ -9,7 +9,9 @@
 from typing import Any, Dict, Optional, Union
 
 from sklearn.metrics import make_scorer  # type: ignore
-from sklearn.metrics._scorer import _BaseScorer  # type: ignore
+from pycaret.utils._sklearn_compat import get_base_scorer_class
+
+_BaseScorer = get_base_scorer_class()
 
 from pycaret.containers.base_container import BaseContainer
 

@@ -12,8 +12,13 @@ from typing import Any, Dict, Optional, Union
 
 import numpy as np
 from sklearn import metrics
-from sklearn.metrics._regression import _check_reg_targets
-from sklearn.metrics._scorer import _BaseScorer
+from pycaret.utils._sklearn_compat import (
+    get_base_scorer_class,
+    get_check_reg_targets,
+)
+
+_BaseScorer = get_base_scorer_class()
+_check_reg_targets = get_check_reg_targets()
 from sklearn.utils.validation import check_consistent_length
 
 import pycaret.containers.base_container
@@ -230,9 +235,14 @@ class MAPEMetricContainer(RegressionMetricContainer):
         def mean_absolute_percentage_error(
             y_true, y_pred, sample_weight=None, multioutput="uniform_average"
         ):
-            y_type, y_true, y_pred, multioutput = _check_reg_targets(
-                y_true, y_pred, multioutput
+            # sklearn 1.5/1.6 returned 4 items; sklearn 1.7+ returns 5
+            # (y_type, y_true, y_pred, sample_weight, multioutput). Capture
+            # tuple and slice to stay compatible across sklearn versions.
+            _reg_targets = _check_reg_targets(
+                y_true, y_pred, sample_weight, multioutput
             )
+            y_type, y_true, y_pred = _reg_targets[0], _reg_targets[1], _reg_targets[2]
+            multioutput = _reg_targets[-1]
             check_consistent_length(y_true, y_pred, sample_weight)
             mask = y_true != 0
             y_true = y_true[mask]
