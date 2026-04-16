@@ -50,7 +50,7 @@ dependencies = [
   "ipywidgets>=7.6.5",
   "tqdm>=4.62.0",
   "numpy>=1.26,<3",
-  "pandas<2.2",
+  "pandas>=2.2,<3",
   "jinja2>=3",
   "scipy>=1.6.1,<=1.11.4",  # to fix later (
   "joblib>=1.4.2,<1.5",
