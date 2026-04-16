@@ -39,3 +39,4 @@ tmp/
 nbtest1.ipynb
 .DS_Store
 .venv-phase1/
+.venv-phase2/
