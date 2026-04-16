@@ -5,6 +5,26 @@ import numpy as np
 import pytest
 
 
+def test_numpy_prod_available_in_sklearn_patch():
+    """pycaret/internal/patches/sklearn.py must use np.prod (numpy 2.0-safe)."""
+    import pycaret.internal.patches.sklearn as sk_patch
+    import inspect
+    src = inspect.getsource(sk_patch)
+    assert "np.product" not in src, (
+        "pycaret/internal/patches/sklearn.py still contains np.product; "
+        "numpy 2.0 removed it. Replace with np.prod."
+    )
+    assert "np.prod(" in src, (
+        "Expected np.prod(...) call in pycaret/internal/patches/sklearn.py"
+    )
+
+
+def test_numpy_prod_matches_legacy_product():
+    """np.prod must return the same value np.product returned on numpy<2.0."""
+    sizes = [2, 3, 4]
+    assert np.prod(sizes, dtype=np.uint64) == 24
+
+
 def test_dependencies_module_imports_on_python312plus():
     """pycaret/utils/_dependencies.py must not import distutils."""
     import pycaret.utils._dependencies as deps
