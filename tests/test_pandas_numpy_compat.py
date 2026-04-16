@@ -25,6 +25,23 @@ def test_numpy_prod_matches_legacy_product():
     assert np.prod(sizes, dtype=np.uint64) == 24
 
 
+def test_preprocessor_uses_lowercase_np_nan():
+    """pycaret/internal/preprocess/preprocessor.py must use np.nan (numpy 2.0-safe)."""
+    # Note: cannot use inspect.getsource() because the preprocessor import
+    # chain pulls in yellowbrick, which itself has a distutils import that
+    # fails on Python 3.12 (Phase 3 scope). Read the source file directly.
+    from pathlib import Path
+    src = Path("pycaret/internal/preprocess/preprocessor.py").read_text()
+    assert "np.NaN" not in src, (
+        "pycaret/internal/preprocess/preprocessor.py still uses np.NaN; "
+        "numpy 2.0 removed it. Replace with np.nan."
+    )
+    assert "np.NAN" not in src, (
+        "pycaret/internal/preprocess/preprocessor.py still uses np.NAN; "
+        "numpy 2.0 removed it. Replace with np.nan."
+    )
+
+
 def test_dependencies_module_imports_on_python312plus():
     """pycaret/utils/_dependencies.py must not import distutils."""
     import pycaret.utils._dependencies as deps
