@@ -88,3 +88,19 @@ First CI run on PRs #3, #4, #5 came back fully red. Two distinct failure modes:
 Cherry-picked `cfe7708c` to `phase-3-plotting` (`a0cdc5fa`) and `phase-4-timeseries` (`f053b022`) so all three open PRs pick up the fix on their next CI run. Both auto-merged on the pyproject.toml hunk.
 
 Local smokes unchanged: plotting 38/3, ts 18/2 (combined 56/5 in 24.4s).
+
+## 2026-05-06 — CI unblock pass round 2
+
+Round 1 fixed install-time errors. Round 2 addresses follow-on issues that surfaced once tests actually ran:
+
+1. **Python 3.11/3.12 (linux+macos): parity collection error.** `tests/parity/test_baseline.py` and three siblings did `from tests.parity.baseline import ...`. `tests/__init__.py` doesn't exist, so `tests` isn't a discoverable package. Fixed by switching all four files to relative imports (`from .baseline import ...`). Could've added `tests/__init__.py` instead, but relative imports are scoped surgically and don't risk surprising pytest's collection elsewhere. Local `pytest --collect-only tests/parity/` collects 17 tests cleanly.
+
+2. **Python 3.13 (linux+macos): pmdarima + scipy build failures.** Two distinct sub-issues:
+   - `pmdarima 2.0.4` build fails under uv's strict PEP 517 isolation — its `setup.py` imports numpy without declaring it as a build dep. Fixed by adding `[tool.uv.extra-build-dependencies]` for pmdarima with `numpy`, `setuptools`, `cython`.
+   - `scipy<=1.11.4` (the "to fix later" upstream cap) has no Python 3.13 wheel. Fixed by lifting to `>=1.11,<2` — closes that comment.
+
+Verified locally with a fresh `.venv-py313`: full install resolves cleanly. Resulting versions on Python 3.13: pmdarima 2.1.1 (jumped from 2.0.4 because uv could now build the latest), numpy 2.3.5 (numpy 2!), scipy 1.16.3, tbats 1.1.3 (installs but graceful-disable activates under numpy 2). htmlmin not pulled in.
+
+Cherry-picked `422472de` to `phase-3-plotting` (`729ff43a`) and `phase-4-timeseries` (`3d636100`). Smokes unchanged.
+
+The Python 3.13 path now exercises the Phase 4 graceful-disable code path for tbats — the dormancy from Phase 4 (numpy 1.26 picked locally) flips to active when 3.13 forces numpy 2.
