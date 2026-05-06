@@ -23,4 +23,20 @@ jobs:
         with:
           name: dist
           path: dist/
-  # publish job wired in Phase 5 with PyPI trusted publishing
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    name: publish to PyPI
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      id-token: write
+    environment:
+      name: pypi
+      url: https://pypi.org/p/pycaret-ng
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
