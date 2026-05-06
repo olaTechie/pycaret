@@ -1146,7 +1146,23 @@ class BATSContainer(TimeSeriesContainer):
         np.random.seed(experiment.seed)
         self.gpu_imported = False
 
-        from sktime.forecasting.bats import BATS  # type: ignore
+        # tbats is unmaintained and numpy-1-only (master spec § 8 risk #2,
+        # FAILURE_TAXONOMY row 12). Under numpy >=2 the import or first
+        # instantiation can fail. Per the spec's fallback policy, we
+        # graceful-disable: the container deactivates and consumers see it
+        # as not-available rather than the experiment crashing on setup.
+        # See docs/superpowers/agents/ts-dev/DEGRADED.md.
+        try:
+            from sktime.forecasting.bats import BATS  # type: ignore
+            BATS()  # raise early if import works but instantiation fails
+        except (ImportError, AttributeError, TypeError, ValueError) as exc:
+            self.logger.warning(
+                "BATS forecaster disabled in pycaret-ng: %s. "
+                "See docs/superpowers/agents/ts-dev/DEGRADED.md.",
+                exc,
+            )
+            self.active = False
+            return
 
         # Disable container if certain features are not supported but enforced ----
         dummy = BATS()
@@ -1215,7 +1231,20 @@ class TBATSContainer(TimeSeriesContainer):
         np.random.seed(experiment.seed)
         self.gpu_imported = False
 
-        from sktime.forecasting.tbats import TBATS
+        # tbats is unmaintained and numpy-1-only (master spec § 8 risk #2,
+        # FAILURE_TAXONOMY row 12). Same graceful-disable pattern as
+        # BATSContainer above. See docs/superpowers/agents/ts-dev/DEGRADED.md.
+        try:
+            from sktime.forecasting.tbats import TBATS
+            TBATS()
+        except (ImportError, AttributeError, TypeError, ValueError) as exc:
+            self.logger.warning(
+                "TBATS forecaster disabled in pycaret-ng: %s. "
+                "See docs/superpowers/agents/ts-dev/DEGRADED.md.",
+                exc,
+            )
+            self.active = False
+            return
 
         # Disable container if certain features are not supported but enforced ----
         dummy = TBATS()
