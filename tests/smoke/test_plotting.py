@@ -94,8 +94,12 @@ def reg_setup():
 
 
 REG_DEGRADED: set[str] = {
-    # Row 23: requires `anywidget` (transitive plotly interactive renderer
-    # dep, not in pycaret's deps). Decision pending — see FAILURE_TAXONOMY.md.
+    # Row 23 (closed): requires `anywidget` (transitive plotly
+    # interactive-widget dep, not in pycaret-ng base deps). Lazy-import
+    # guard at tabular_experiment.py:residuals_interactive raises
+    # NotImplementedError with a clear `pip install anywidget` hint.
+    # Smoke skip stays — the harness intentionally doesn't install
+    # anywidget to verify the degrade path keeps user errors loud.
     "residuals_interactive",
 }
 

@@ -67,7 +67,7 @@ User-facing summary:
 |------|------|--------|------------|
 | `error` | classification | yellowbrick's `ClassPredictionError` unpacks a 3-tuple from a sklearn helper whose return shape changed under sklearn ≥1.6. Internal to yellowbrick. | Use `plot="confusion_matrix"` or `plot="class_report"` instead. |
 | `distance` | clustering | yellowbrick's `InterclusterDistance` calls `np.percentile(..., interpolation=...)` which numpy ≥2 removed. | Use `plot="silhouette"` or `plot="elbow"` instead. |
-| `residuals_interactive` | regression | requires the optional `anywidget` package. | Either `pip install anywidget` or use `plot="residuals"` (static). |
+| `residuals_interactive` | regression | requires the optional `anywidget` package (transitive plotly interactive-widget dep). pycaret-ng raises `NotImplementedError` with a `pip install anywidget` hint when the dep is missing — fail-loud, not silent. | Either `pip install anywidget` (the runtime guard lifts automatically) or use `plot="residuals"` (static). |
 
 The disabled visualizers raise `NotImplementedError` with a pointer to `docs/superpowers/agents/plotting-dev/DEGRADED.md` — they fail loudly, not silently.
 

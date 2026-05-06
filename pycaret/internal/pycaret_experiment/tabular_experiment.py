@@ -618,6 +618,25 @@ class _TabularExperiment(_PyCaretExperiment):
                     self.logger.info("Visual Rendered Successfully")
 
                 def residuals_interactive():
+                    # InteractiveResidualsPlot uses plotly's interactive
+                    # widget chain, which transitively requires `anywidget`
+                    # under modern plotly + Jupyter. Pycaret-ng does not
+                    # ship anywidget in base deps to keep the wheel light;
+                    # users can either `pip install anywidget` or use the
+                    # static `plot='residuals'` instead. See
+                    # docs/superpowers/agents/plotting-dev/DEGRADED.md.
+                    try:
+                        import anywidget  # noqa: F401
+                    except ImportError as exc:
+                        raise NotImplementedError(
+                            "plot='residuals_interactive' requires the "
+                            "optional `anywidget` package which pycaret-ng "
+                            "does not install by default. Either run "
+                            "`pip install anywidget` and retry, or use the "
+                            "static plot='residuals' instead. Tracked in "
+                            "docs/superpowers/agents/plotting-dev/DEGRADED.md."
+                        ) from exc
+
                     from pycaret.internal.plots.residual_plots import (
                         InteractiveResidualsPlot,
                     )
