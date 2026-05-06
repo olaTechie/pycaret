@@ -1,10 +1,19 @@
+<!--
+This is `pycaret-ng`, a soft-fork of upstream pycaret modernized for
+Python 3.9–3.13, scikit-learn ≥ 1.6, pandas ≥ 2.2, modern sktime /
+matplotlib / yellowbrick. Internal import path is unchanged:
+`import pycaret`. See MIGRATION.md for the upstream → ng delta.
+-->
+
+> **Note:** This is `pycaret-ng`, a soft-fork of upstream [pycaret](https://github.com/pycaret/pycaret) modernized for Python 3.9–3.13, scikit-learn ≥ 1.6, pandas ≥ 2.2, and current sktime / matplotlib / yellowbrick. Install via `pip install pycaret-ng`; the import path is still `import pycaret`. Migration guide: [MIGRATION.md](MIGRATION.md).
+
 <div align="center">
 
 <img src="docs/images/logo.png" alt="drawing" width="200"/>
 
 ## **An open-source, low-code machine learning library in Python**
-## 🎉🎉🎉 **PyCaret 3.4 is now available. 🎉🎉🎉**
-## `pip install --upgrade pycaret` </br>
+## 🎉🎉🎉 **pycaret-ng 1.0.0 — modernization-complete fork of PyCaret 3.4.0** 🎉🎉🎉
+## `pip install pycaret-ng` </br>
 
 <p align="center">
 <h3>
@@ -42,52 +51,52 @@ The design and simplicity of PyCaret are inspired by the emerging role of citize
 
 ## 🌐 Option 1: Install via PyPi
 PyCaret is tested and supported on 64-bit systems with:
-- Python 3.9, 3.10, 3.11 and 3.12
+- Python 3.9, 3.10, 3.11, 3.12, and 3.13
 - Ubuntu 16.04 or later
 - Windows 7 or later
 
 You can install PyCaret with Python's pip package manager:
 
 ```python
-# install pycaret
-pip install pycaret
+# install pycaret-ng (import path stays `import pycaret`)
+pip install pycaret-ng
 ```
 
 PyCaret's default installation will not install all the optional dependencies automatically. Depending on the use case, you may be interested in one or more extras:
 
 ```python
 # install analysis extras
-pip install pycaret[analysis]
+pip install pycaret-ng[analysis]
 
 # models extras
-pip install pycaret[models]
+pip install pycaret-ng[models]
 
 # install tuner extras
-pip install pycaret[tuner]
+pip install pycaret-ng[tuner]
 
 # install mlops extras
-pip install pycaret[mlops]
+pip install pycaret-ng[mlops]
 
 # install parallel extras
-pip install pycaret[parallel]
+pip install pycaret-ng[parallel]
 
 # install test extras
-pip install pycaret[test]
+pip install pycaret-ng[test]
 
 # install dev extras
-pip install pycaret[dev]
+pip install pycaret-ng[dev]
 
 ##
 
 # install multiple extras together
-pip install pycaret[analysis,models]
+pip install pycaret-ng[analysis,models]
 ```
 
 Check out all [optional dependencies](https://github.com/pycaret/pycaret/blob/master/requirements-optional.txt). If you want to install everything including all the optional dependencies:
 
 ```python
 # install full version
-pip install pycaret[full]
+pip install pycaret-ng[full]
 ```
 ## 📄 Option 2: Build from Source
 Install the development version of the library directly from the source. The API may be unstable. It is not recommended for production use.
