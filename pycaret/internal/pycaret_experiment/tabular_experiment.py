@@ -4,6 +4,7 @@ import os
 import random
 import secrets
 import traceback
+from contextlib import ExitStack
 from copy import deepcopy
 from typing import Any, Dict, List, Optional, Tuple, Union
 from unittest.mock import patch
@@ -533,10 +534,34 @@ class _TabularExperiment(_PyCaretExperiment):
             "yellowbrick.utils.types.is_estimator",
             pycaret.internal.patches.yellowbrick.is_estimator,
         ):
-            with patch(
-                "yellowbrick.utils.helpers.is_estimator",
-                pycaret.internal.patches.yellowbrick.is_estimator,
-            ):
+            with ExitStack() as _yb_stack:
+                # Pipeline-aware shims for yellowbrick's role-detection.
+                # See pycaret/internal/patches/yellowbrick.py and
+                # FAILURE_TAXONOMY rows 18 (clf), 21 (reg), 22 (clu).
+                # Patches target each consumer module's local binding
+                # (yellowbrick base classes do `from yellowbrick.utils
+                # import is{X}` at import time, so the source-module
+                # patch alone wouldn't reach them).
+                _yb_patches = (
+                    (
+                        "yellowbrick.utils.helpers.is_estimator",
+                        pycaret.internal.patches.yellowbrick.is_estimator,
+                    ),
+                    (
+                        "yellowbrick.classifier.base.isclassifier",
+                        pycaret.internal.patches.yellowbrick.is_classifier,
+                    ),
+                    (
+                        "yellowbrick.regressor.base.isregressor",
+                        pycaret.internal.patches.yellowbrick.is_regressor,
+                    ),
+                    (
+                        "yellowbrick.cluster.base.isclusterer",
+                        pycaret.internal.patches.yellowbrick.is_clusterer,
+                    ),
+                )
+                for _yb_target, _yb_replacement in _yb_patches:
+                    _yb_stack.enter_context(patch(_yb_target, _yb_replacement))
                 _base_dpi = 100
 
                 def pipeline():
