@@ -25,3 +25,14 @@ Append-only progress log.
 ## 2026-05-06 — Phase 3 verification floor
 - `.venv-phase3/bin/python -m pytest --confcutdir=tests/smoke tests/smoke/test_plotting.py -v` → **38 passed, 3 skipped (degraded), 0 failed in 11.58s**. Well within the 90s budget.
 - Out-of-scope deferrals: full `pytest tests/` matrix (Gate A) is CI-only; tutorial smoke (Gate C) deferred until pyproject `[full]` install is repeatable. Gate B is waived for Phase 3 per master spec.
+
+## 2026-05-06 — W3/W4 status
+- **W3 (plotly-resampler floor lift):** Skipped this Phase. The smoke exercises every classification/regression/clustering visualizer in `_available_plots`; none surface a plotly-resampler call site (those live in time-series paths owned by Phase 4). Lifting the floor at this Phase would risk a transitive plotly upgrade with no Phase-3-reachable verification target. Deferred to Phase 4 alongside the time-series stack.
+- **W4 (mljar-scikit-plot audit):** Audit clean. Smoke entries `confusion_matrix`, `lift`, `gain`, `ks` (the four `skplt.*`-backed visualizers) all pass under matplotlib ≥3.8 with the unpinned mljar-scikit-plot. No floor lift required.
+
+## 2026-05-06 — Phase 3 ready for PR
+- Branch: `phase-3-plotting`. Net 13 new commits this session (4 `fix(plot)`, 2 `test(smoke)`, 7 `docs(*)`).
+- Local floor green; CI matrix is the next gate.
+- Cherry-pick scope: every `fix(plot)` commit touches only `pycaret/internal/...` paths, except `58ae9a2b` which bundles the disable raises with DEGRADED.md + smoke skip-list updates. Acceptable per "applies cleanly" reading of Gate D; noted as a discipline imperfection.
+- Open: row 23 (anywidget) deferred to Phase 5 release-hygiene punch list.
+- Next agent action: `git push -u origin phase-3-plotting` + open PR `phase-3-plotting → modernize` (or `master` if `modernize` branch is behind, per the user's branch topology).
