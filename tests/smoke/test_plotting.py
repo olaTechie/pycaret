@@ -48,7 +48,11 @@ def clf_setup():
 
 # Skip-list mirrors DEGRADED.md; entries added as Phase 3 fixes uncover
 # unfixable visualizers under fallback policy (b).
-CLF_DEGRADED: set[str] = set()
+CLF_DEGRADED: set[str] = {
+    # DEGRADED row: yellowbrick 1.5's ClassPredictionError unpacks a
+    # 3-tuple from a sklearn helper whose shape changed under sklearn 1.6.
+    "error",
+}
 
 CLF_PLOTS = sorted(
     [
@@ -130,7 +134,11 @@ def clu_setup():
     return exp, model
 
 
-CLU_DEGRADED: set[str] = set()
+CLU_DEGRADED: set[str] = {
+    # DEGRADED row: yellowbrick's InterclusterDistance still passes the
+    # removed `interpolation=` kwarg to np.percentile() (numpy 2 drop).
+    "distance",
+}
 
 CLU_PLOTS = sorted(
     [

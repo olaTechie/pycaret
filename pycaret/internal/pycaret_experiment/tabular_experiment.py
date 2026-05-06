@@ -1126,7 +1126,14 @@ class _TabularExperiment(_PyCaretExperiment):
                         raise TypeError("Plot Type not supported for this model.")
 
                 def distance():
-                    from yellowbrick.cluster import InterclusterDistance
+                    raise NotImplementedError(
+                        "plot='distance' is temporarily disabled in pycaret-ng "
+                        "under numpy>=2 / yellowbrick>=1.5: yellowbrick's "
+                        "InterclusterDistance still calls np.percentile with "
+                        "the removed `interpolation=` kwarg. Tracked in "
+                        "docs/superpowers/agents/plotting-dev/DEGRADED.md."
+                    )
+                    from yellowbrick.cluster import InterclusterDistance  # noqa: F401  # kept for cherry-pick parity
 
                     try:
                         visualizer = InterclusterDistance(estimator, **plot_kwargs)
@@ -1244,7 +1251,17 @@ class _TabularExperiment(_PyCaretExperiment):
 
                 def error():
                     if self._ml_usecase == MLUsecase.CLASSIFICATION:
-                        from yellowbrick.classifier import ClassPredictionError
+                        raise NotImplementedError(
+                            "plot='error' (classification) is temporarily "
+                            "disabled in pycaret-ng under sklearn>=1.6 / "
+                            "yellowbrick>=1.5: yellowbrick's "
+                            "ClassPredictionError unpacks a 3-tuple from a "
+                            "sklearn helper that now returns a different "
+                            "shape. Regression 'error' is unaffected. "
+                            "Tracked in "
+                            "docs/superpowers/agents/plotting-dev/DEGRADED.md."
+                        )
+                        from yellowbrick.classifier import ClassPredictionError  # noqa: F401
 
                         visualizer = ClassPredictionError(
                             estimator, random_state=self.seed, **plot_kwargs
