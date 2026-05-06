@@ -53,3 +53,13 @@ importlib.metadata.version("pycaret-ng")  # 1.0.0
 
 ### Master spec § 4 v1.1.0+
 LLM phases (6.0 conversational SDK, 6.1 EDA advisor, 6.2 auto reports, 6.3 LLM zoo estimators, 6.4 MCP server) become the active roadmap once v1.0.0 is published.
+
+## 2026-05-06 — Phase 5 PR open
+- PR: https://github.com/olaTechie/pycaret/pull/5 (base `phase-4-timeseries`; auto-retargets up the stack as PRs #3, #4 merge).
+- Branch state: 9 commits on `phase-5-release` since `phase-4-timeseries`.
+- Awaiting CI matrix.
+- **Next user actions:**
+  1. Watch CI on PRs #3, #4, #5 (in stack order).
+  2. Merge PRs as they go green.
+  3. Once `modernize` includes Phase 5, configure pypi.org trusted publisher for `pycaret-ng` pointing at `olaTechie/pycaret` `release.yml`.
+  4. Tag `v1.0.0` and push the tag — `release.yml` builds and (with pypi side configured) publishes.
