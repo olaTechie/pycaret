@@ -552,6 +552,14 @@ class _TabularExperiment(_PyCaretExperiment):
                         pycaret.internal.patches.yellowbrick.is_classifier,
                     ),
                     (
+                        "yellowbrick.classifier.threshold.is_classifier",
+                        pycaret.internal.patches.yellowbrick.is_classifier,
+                    ),
+                    (
+                        "yellowbrick.model_selection.importances.is_classifier",
+                        pycaret.internal.patches.yellowbrick.is_classifier,
+                    ),
+                    (
                         "yellowbrick.regressor.base.isregressor",
                         pycaret.internal.patches.yellowbrick.is_regressor,
                     ),
