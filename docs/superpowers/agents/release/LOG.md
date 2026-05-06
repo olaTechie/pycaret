@@ -76,3 +76,15 @@ LLM phases (6.0 conversational SDK, 6.1 EDA advisor, 6.2 auto reports, 6.3 LLM z
 - **Row 14** (joblib `Memory.bytes_limit`): activates when joblib `<1.5` cap can be lifted — v1.0.x candidate.
 - **Phase 4 latent** (pmdarima `force_all_finite` shim): activates when sklearn 1.8 reachable — v1.0.x candidate.
 - All other rows from FAILURE_TAXONOMY are now closed or degraded.
+
+## 2026-05-06 — CI unblock pass
+
+First CI run on PRs #3, #4, #5 came back fully red. Two distinct failure modes:
+
+1. **Python 3.11 / 3.12 (linux + macos):** `TypeError: Descriptors cannot be created directly` — mlflow's transitive `opentelemetry _pb2.py` modules clash with protobuf ≥4 under the C++ implementation. Fix landed as `cfe7708c` on `phase-5-release`: top-of-`tests/conftest.py` sets `PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python` before any pycaret/mlflow import. Mirrors what `tests/smoke/conftest.py` already does.
+
+2. **Python 3.13 (linux + macos):** `htmlmin@0.1.12` build fails — Python 3.13 removed the `cgi` module; `htmlmin` 0.1.12 is unmaintained. uv resolved an older `ydata-profiling` on 3.13 that still required `htmlmin`. Fix in same commit: bump `ydata-profiling` floor in both `full` and `analysis` extras from `>=4.3.1` to `>=4.18` (4.18.4 verified to have no `htmlmin` requirement).
+
+Cherry-picked `cfe7708c` to `phase-3-plotting` (`a0cdc5fa`) and `phase-4-timeseries` (`f053b022`) so all three open PRs pick up the fix on their next CI run. Both auto-merged on the pyproject.toml hunk.
+
+Local smokes unchanged: plotting 38/3, ts 18/2 (combined 56/5 in 24.4s).
