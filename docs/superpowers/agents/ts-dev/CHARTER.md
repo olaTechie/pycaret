@@ -1,30 +1,31 @@
 # Time-series Migration Dev — Charter
 
-**Role:** Fix all time-series-stack failures (sktime, pmdarima, statsmodels, tbats) while satisfying gates A, B, C, D. Highest risk of structural breakage; MAY ship with narrowed API documented in `DEGRADED.md`.
+**Phase:** 4 (Time-series Stack)
+**Branch:** `phase-4-timeseries` (off `phase-3-plotting`)
+**Spec:** `docs/superpowers/specs/2026-05-06-phase-4-timeseries-design.md`
+**Plan:** `docs/superpowers/plans/2026-05-06-phase-4-timeseries.md`
 
-**Phase:** 4.
+## Inputs
+- `FAILURE_TAXONOMY.md` rows tagged `sktime | pmdarima | statsmodels | tbats` (currently 12, 13, 16; possibly more from Phase 4 install probe).
+- Master spec § 4 Phase 4 paragraph; § 8 risk #1 (sktime structural drift).
 
-**Inputs:**
-- FAILURE_TAXONOMY.md rows with `Owner agent = ts-dev`.
-- Branch: `phase-4-timeseries`.
-- Parity harness (time-series subset): `tests/parity/test_*_parity.py` with `--ts` marker.
+## Outputs
+- Cherry-pickable commits on `phase-4-timeseries` (one logical change per commit).
+- New `tests/smoke/test_time_series.py` (pycaret-ng infra, exempt from Gate D).
+- Updated `FAILURE_TAXONOMY.md` and `MIGRATION_BACKLOG.md`.
+- `DEGRADED.md` rows for tbats (definite) and any sktime narrowings (probe-driven).
 
-**Outputs:**
-- Commits on `phase-4-timeseries`.
-- Commit prefix: `fix(ts):` or `chore(ts):` for narrowing decisions.
-- If narrowing required: `docs/superpowers/agents/ts-dev/DEGRADED.md` enumerating removed / modified APIs with rationale.
-- PR opened to `modernize` when ts rows closed.
+## Stop criteria
+- All in-scope rows closed or degraded.
+- Smoke harness green locally.
+- PR open from `phase-4-timeseries → modernize` with CI green.
 
-**Stop conditions:**
-- All `sktime|pmdarima|statsmodels|tbats`-tagged rows closed OR explicitly marked DEGRADED with rationale.
-- `pytest tests/` green (time-series subset, with DEGRADED tests skipped via marker).
-- Parity within tolerance for retained API surface.
-- Cherry-pick dry-run green.
+## Out-of-scope handoffs
+- New time-series estimators → not Phase 4.
+- Plotly-resampler bump deferred from Phase 3 → optional in Phase 4 (only if a smoke-reachable site surfaces); otherwise Phase 5.
+- Joblib `Memory.bytes_limit` (row 14) → Phase 5.
 
-**Out-of-scope:** sklearn/pandas/plotting.
-
-**Narrowing protocol:**
-- If sktime breaking changes are structural (e.g., forecaster API gone), propose narrowing via PR comment to Orchestrator BEFORE committing removal.
-- Every removed API gets a `DEGRADED.md` entry with: old signature, reason removed, suggested user workaround.
-
-**Handoff protocol:** Same as sklearn-dev.
+## Authority
+- May add taxonomy rows. May not edit closed rows owned by other agents.
+- May edit `pyproject.toml` for TS-stack dep floors only.
+- May narrow pycaret's TS API (raise NotImplementedError + DEGRADED row) without further authorization, per the master spec's pre-authorization for Phase 4.
