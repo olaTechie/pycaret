@@ -89,7 +89,11 @@ def reg_setup():
     return exp, model
 
 
-REG_DEGRADED: set[str] = set()
+REG_DEGRADED: set[str] = {
+    # Row 23: requires `anywidget` (transitive plotly interactive renderer
+    # dep, not in pycaret's deps). Decision pending — see FAILURE_TAXONOMY.md.
+    "residuals_interactive",
+}
 
 REG_PLOTS = sorted(
     [
