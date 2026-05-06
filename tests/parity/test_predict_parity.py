@@ -9,8 +9,8 @@ import numpy as np
 import pytest
 from scipy.stats import spearmanr
 
-from tests.parity.baseline import load_predictions
-from tests.parity.datasets import load_reference
+from .baseline import load_predictions
+from .datasets import load_reference
 
 
 @pytest.mark.parametrize(
