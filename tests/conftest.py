@@ -1,3 +1,11 @@
+import os
+
+# Pure-Python protobuf — must run before any package that imports
+# generated _pb2.py modules built against older protoc. Mlflow's
+# protos clash with protobuf >= 4 under the C++ implementation; the
+# pure-Python parser ignores that mismatch.
+os.environ.setdefault("PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION", "python")
+
 import numpy as np
 import pytest
 
