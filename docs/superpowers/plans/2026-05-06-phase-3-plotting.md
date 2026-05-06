@@ -12,9 +12,23 @@
 
 **Branch:** `phase-3-plotting` (off `modernize`)
 
-**Verification floor (local):** `pytest tests/smoke/test_plotting.py -v` green or skips-only. Aggregate <90 s, per-plot <30 s. **Do not run the full `pytest tests/` locally** — it hangs the user's machine. Gate A is enforced by CI on PR push.
+**Verification floor (local):** `.venv-phase3/bin/python -m pytest --confcutdir=tests/smoke tests/smoke/test_plotting.py -v` green or skips-only. Aggregate <90 s, per-plot <30 s. **Do not run the full `pytest tests/` locally** — it hangs the user's machine. Gate A is enforced by CI on PR push.
 
-**Working venv:** `.venv-phase3` (already exists at repo root; activate with `source .venv-phase3/bin/activate`).
+**Working venv:** `.venv-phase3` (already exists at repo root, Python 3.12.13).
+
+**Important — invocation pattern.** Do NOT use `source .venv-phase3/bin/activate`. The activate script's PATH was baked in at venv-creation time using a Dropbox CloudStorage path alias (`00Todo/00_ToReview` vs `00_ToReview`) that no longer resolves, so after activate `which python` falls back to anaconda's 3.13 (which violates pycaret's 3.9–3.12 guard). Always invoke the binary directly:
+
+```bash
+.venv-phase3/bin/python -m pytest --confcutdir=tests/smoke tests/smoke/...
+```
+
+The `--confcutdir=tests/smoke` flag is required because the root `tests/conftest.py` eagerly imports `pycaret`, which transitively imports `sktime`. Sktime is not installed yet (Phase 4 owns its modernization). `--confcutdir` tells pytest to ignore conftests above `tests/smoke/`, so only the smoke harness's lightweight conftest loads.
+
+Canonical smoke invocation used throughout this plan:
+
+```bash
+.venv-phase3/bin/python -m pytest --confcutdir=tests/smoke tests/smoke/test_plotting.py -v
+```
 
 ---
 
@@ -176,7 +190,6 @@ import pytest
 Run:
 
 ```bash
-source .venv-phase3/bin/activate
 python -c "import pytest; pytest.main(['--collect-only', 'tests/smoke/'])"
 ```
 
@@ -220,7 +233,7 @@ Per-plot timeout 30 s, aggregate target <90 s on a developer laptop.
 This file is NOT discovered by `pytest tests/` (it lives under
 `tests/smoke/`). Run explicitly:
 
-    pytest tests/smoke/test_plotting.py -v
+    .venv-phase3/bin/python -m pytest --confcutdir=tests/smoke tests/smoke/test_plotting.py -v
 """
 from __future__ import annotations
 
@@ -280,7 +293,6 @@ def test_classification_plot(clf_setup, plot, tmp_path):
 Run:
 
 ```bash
-source .venv-phase3/bin/activate
 python -c "import pytest_timeout" || pip install pytest-timeout
 ```
 
@@ -311,7 +323,7 @@ And remove the `@pytest.mark.timeout(30)` decorator from `tests/smoke/test_plott
 Run:
 
 ```bash
-pytest tests/smoke/test_plotting.py::test_classification_plot -v --tb=short -x
+.venv-phase3/bin/python -m pytest --confcutdir=tests/smoke tests/smoke/test_plotting.py::test_classification_plot -v --tb=short -x
 ```
 
 Expected: at least the yellowbrick-backed plots (`auc`, `pr`, `error`, `class_report`, `confusion_matrix`, `threshold`, `learning`, `vc`, `manifold`, `feature`, `feature_all`, `dimension`, `boundary`, `calibration`, `rfe`) FAIL with the row-18 signature (`yellowbrick.exceptions.YellowbrickTypeError: This estimator is not a classifier`) or similar. Some plots (`pipeline`, `parameter`, `tree`, `lift`, `gain`, `ks`) may pass since they don't go through yellowbrick.
@@ -407,7 +419,7 @@ Expected: a list of column names. The fixture's `target = "Class variable" if ..
 Run:
 
 ```bash
-pytest tests/smoke/test_plotting.py::test_regression_plot -v --tb=short
+.venv-phase3/bin/python -m pytest --confcutdir=tests/smoke tests/smoke/test_plotting.py::test_regression_plot -v --tb=short
 ```
 
 Expected: yellowbrick-backed regression plots (`residuals`, `error`, `cooks`, `learning`, `manifold`, `vc`, `feature`, `feature_all`, `rfe`) likely fail with the same row-18 signature.
@@ -479,7 +491,7 @@ def test_clustering_plot(clu_setup, plot, tmp_path):
 - [ ] **Step 2: Run clustering smoke**
 
 ```bash
-pytest tests/smoke/test_plotting.py::test_clustering_plot -v --tb=short
+.venv-phase3/bin/python -m pytest --confcutdir=tests/smoke tests/smoke/test_plotting.py::test_clustering_plot -v --tb=short
 ```
 
 Expected: yellowbrick-backed `elbow` and `silhouette` likely fail with the row-18 signature; the rest may pass.
@@ -487,7 +499,7 @@ Expected: yellowbrick-backed `elbow` and `silhouette` likely fail with the row-1
 - [ ] **Step 3: Run the full smoke once to capture full failure landscape**
 
 ```bash
-pytest tests/smoke/test_plotting.py -v --tb=short --no-header 2>&1 | tee /tmp/phase3-smoke-baseline.txt
+.venv-phase3/bin/python -m pytest --confcutdir=tests/smoke tests/smoke/test_plotting.py -v --tb=short --no-header 2>&1 | tee /tmp/phase3-smoke-baseline.txt
 ```
 
 The `/tmp/phase3-smoke-baseline.txt` file is the input for Task 6 (taxonomy refresh) and Task 7 (yellowbrick fix). It's not committed.
@@ -713,7 +725,7 @@ Note: every line of the original `with patch(...)` body (everything after `_base
 - [ ] **Step 3: Re-run the smoke harness**
 
 ```bash
-pytest tests/smoke/test_plotting.py -v --tb=short 2>&1 | tee /tmp/phase3-smoke-w1.txt
+.venv-phase3/bin/python -m pytest --confcutdir=tests/smoke tests/smoke/test_plotting.py -v --tb=short 2>&1 | tee /tmp/phase3-smoke-w1.txt
 ```
 
 Expected: yellowbrick-backed plots that previously failed with `YellowbrickTypeError` now pass. Any remaining failures fall into one of three buckets:
@@ -787,7 +799,7 @@ Expected: typically no matches in pycaret's plot code. If matches exist, the dep
 - [ ] **Step 4: Re-run smoke**
 
 ```bash
-pytest tests/smoke/test_plotting.py -v --tb=short
+.venv-phase3/bin/python -m pytest --confcutdir=tests/smoke tests/smoke/test_plotting.py -v --tb=short
 ```
 
 Expected: any matplotlib-deprecation failures from earlier baseline are now gone. New failures (if any) belong to W2 step 5 or W3/W4.
@@ -899,7 +911,7 @@ Expected: import succeeds; version matches the new floor.
 - [ ] **Step 4: Re-run smoke**
 
 ```bash
-pytest tests/smoke/test_plotting.py -v --tb=short
+.venv-phase3/bin/python -m pytest --confcutdir=tests/smoke tests/smoke/test_plotting.py -v --tb=short
 ```
 
 Expected: no new failures introduced (smoke does not exercise plotly-resampler call sites — those are time-series only). If a non-time-series plot now fails because of a transitive plotly upgrade, file a row and either fix or roll back the floor.
@@ -1000,7 +1012,7 @@ If any `skplt.*`-backed plot fails:
 Run smoke; collect any test that still fails (not skip, not pass).
 
 ```bash
-pytest tests/smoke/test_plotting.py -v --tb=short 2>&1 | tee /tmp/phase3-smoke-final.txt
+.venv-phase3/bin/python -m pytest --confcutdir=tests/smoke tests/smoke/test_plotting.py -v --tb=short 2>&1 | tee /tmp/phase3-smoke-final.txt
 ```
 
 If all pass: skip Task 13 entirely. Add to LOG.md: "DEGRADED.md remains empty".
@@ -1030,7 +1042,7 @@ Add `<plot_key>` to the corresponding `*_DEGRADED` set in `tests/smoke/test_plot
 - [ ] **Step 5: Re-run smoke**
 
 ```bash
-pytest tests/smoke/test_plotting.py -v
+.venv-phase3/bin/python -m pytest --confcutdir=tests/smoke tests/smoke/test_plotting.py -v
 ```
 
 Expected: no failures. Skips for the degraded entries are fine.
@@ -1081,7 +1093,7 @@ If any Phase 3 rows landed in DEGRADED.md instead of being closed, mark them `de
 - [ ] **Step 3: Verify smoke is still green**
 
 ```bash
-pytest tests/smoke/test_plotting.py -v
+.venv-phase3/bin/python -m pytest --confcutdir=tests/smoke tests/smoke/test_plotting.py -v
 ```
 
 Expected: all pass or skip-only.
@@ -1173,7 +1185,7 @@ appended during Phase 3 smoke baseline.
 - W7: Taxonomy + backlog refresh.
 
 ### Verification
-- Local smoke: `pytest tests/smoke/test_plotting.py -v` green / skips-only.
+- Local smoke: `.venv-phase3/bin/python -m pytest --confcutdir=tests/smoke tests/smoke/test_plotting.py -v` green / skips-only.
 - CI matrix: see Actions tab.
 - Parity gate B: waived for Phase 3 (visual outputs).
 - Cherry-pick discipline: each `fix(plot)`/`feat(plot)`/`chore(plot)`
@@ -1202,12 +1214,12 @@ When green, merge. Then:
 ## Self-Review Checklist
 
 After implementation, verify:
-- [ ] `pytest tests/smoke/test_plotting.py -v` is green or skips-only on `phase-3-plotting` HEAD.
+- [ ] `.venv-phase3/bin/python -m pytest --confcutdir=tests/smoke tests/smoke/test_plotting.py -v` is green or skips-only on `phase-3-plotting` HEAD.
 - [ ] FAILURE_TAXONOMY row 18 is `closed` with closure SHA in Notes.
 - [ ] Any DEGRADED.md row points to a real `NotImplementedError` raise site and to a tracking link.
 - [ ] No commit message uses `--no-verify`, no commit skips hooks.
 - [ ] Each cherry-pick-eligible commit applies cleanly onto `modernize` HEAD without this branch.
-- [ ] Total wall-clock for `pytest tests/smoke/test_plotting.py -v` is under 90 s on the dev laptop.
+- [ ] Total wall-clock for `.venv-phase3/bin/python -m pytest --confcutdir=tests/smoke tests/smoke/test_plotting.py -v` is under 90 s on the dev laptop.
 - [ ] No edits made to upstream-pure files outside the plotting stack (no sklearn / pandas / time-series collateral damage).
 
 If any item fails, that's not Phase 3 done — fix before opening PR.
