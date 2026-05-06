@@ -63,3 +63,16 @@ LLM phases (6.0 conversational SDK, 6.1 EDA advisor, 6.2 auto reports, 6.3 LLM z
   2. Merge PRs as they go green.
   3. Once `modernize` includes Phase 5, configure pypi.org trusted publisher for `pycaret-ng` pointing at `olaTechie/pycaret` `release.yml`.
   4. Tag `v1.0.0` and push the tag — `release.yml` builds and (with pypi side configured) publishes.
+
+## 2026-05-06 — Row 23 (anywidget) closed
+- Closed by `4cab8593` — lazy-import + NotImplementedError at `tabular_experiment.py:residuals_interactive` with a clear `pip install anywidget` / use `plot='residuals'` hint.
+- Matches the master spec's fix-or-disable fallback policy (b); fail-loud, not silent.
+- DEGRADED.md (plotting-dev) row added; MIGRATION.md "Known limitations" updated; FAILURE_TAXONOMY row 23 marked closed.
+- Smokes unchanged after the fix: plotting 38 passed / 3 skipped, TS 18 passed / 2 skipped.
+- Pushed to PR #5; the fix is part of the v1.0.0 release.
+
+## Outstanding (revised post-anywidget-close)
+- **Row 2** (joblib `FastMemorizedFunc`): pin already in place, holds.
+- **Row 14** (joblib `Memory.bytes_limit`): activates when joblib `<1.5` cap can be lifted — v1.0.x candidate.
+- **Phase 4 latent** (pmdarima `force_all_finite` shim): activates when sklearn 1.8 reachable — v1.0.x candidate.
+- All other rows from FAILURE_TAXONOMY are now closed or degraded.
