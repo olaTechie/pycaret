@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from tests.parity.baseline import (
+from .baseline import (
     LeaderboardBaseline,
     PredictionBaseline,
     load_leaderboard,
