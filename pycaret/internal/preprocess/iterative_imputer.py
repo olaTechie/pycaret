@@ -182,16 +182,16 @@ class IterativeImputer(SklearnIterativeImputer):
             number of features.
         """
         if is_scalar_nan(self.missing_values):
-            force_all_finite = "allow-nan"
+            ensure_all_finite = "allow-nan"
         else:
-            force_all_finite = True
+            ensure_all_finite = True
 
         X = self._validate_data(
             X,
             dtype=FLOAT_DTYPES,
             order="F",
             reset=in_fit,
-            force_all_finite=force_all_finite,
+            ensure_all_finite=ensure_all_finite,
         )
         _check_inputs_dtype(X, self.missing_values)
 
