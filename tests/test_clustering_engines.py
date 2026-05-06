@@ -1,5 +1,8 @@
-import daal4py
 import pytest
+
+pytest.importorskip("daal4py")
+
+import daal4py
 import sklearn
 
 import pycaret.clustering

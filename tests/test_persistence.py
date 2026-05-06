@@ -1,7 +1,11 @@
 import os
 
-import boto3
 import pytest
+
+pytest.importorskip("moto")
+pytest.importorskip("boto3")
+
+import boto3
 from moto import mock_s3
 
 from pycaret.internal.persistence import deploy_model, load_model
