@@ -7,8 +7,8 @@ from __future__ import annotations
 
 import pytest
 
-from tests.parity.baseline import load_leaderboard
-from tests.parity.datasets import load_reference
+from .baseline import load_leaderboard
+from .datasets import load_reference
 
 
 @pytest.mark.parametrize(
