@@ -271,12 +271,14 @@ class MAEMetricContainer(TimeSeriesMetricContainer):
 
 class RMSEMetricContainer(TimeSeriesMetricContainer):
     def __init__(self, globals_dict: dict) -> None:
+        # sklearn 1.6 deprecated mean_squared_error(squared=False); sklearn
+        # 1.7 removed the kwarg. Use the dedicated root_mean_squared_error.
+        # Mirrors the regression-metrics fix in containers/metrics/regression.py.
         super().__init__(
             id="rmse",
             name="RMSE",
-            score_func=metrics.mean_squared_error,
+            score_func=metrics.root_mean_squared_error,
             greater_is_better=False,
-            args={"squared": False},
             scorer="neg_root_mean_squared_error",
         )
 
