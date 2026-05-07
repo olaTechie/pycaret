@@ -117,8 +117,8 @@ full = [
   "mlxtend>=0.19.0",
   "statsforecast<1.8.0,>1.6",
   "scikit-learn-intelex>=2025.0; platform_machine == 'x86_64' or platform_machine == 'AMD64'",  # 2024.x bundled an older daal4py that imports sklearn.utils._joblib (removed in sklearn 1.6).
-  "tune-sklearn",
-  "ray[tune]",
+  "tune-sklearn; sys_platform != 'win32' or python_version < '3.13'",  # ray dep; ray has no 3.13 Windows wheel.
+  "ray[tune]; sys_platform != 'win32' or python_version < '3.13'",  # No 3.13 Windows wheel as of pycaret-ng 1.0.0.
   "hyperopt>=0.2.7",
   "optuna>=3.0.0",
   "optuna-integration",
@@ -167,8 +167,8 @@ models = [
 ]
 
 tuners = [
-  "tune-sklearn",
-  "ray[tune]",
+  "tune-sklearn; sys_platform != 'win32' or python_version < '3.13'",  # ray dep; ray has no 3.13 Windows wheel.
+  "ray[tune]; sys_platform != 'win32' or python_version < '3.13'",  # No 3.13 Windows wheel as of pycaret-ng 1.0.0.
   "hyperopt>=0.2.7",
   "optuna>=3.0.0",
   "optuna-integration",
