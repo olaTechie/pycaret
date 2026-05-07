@@ -1,4 +1,5 @@
 """Unit tests for pycaret-ng Phase 3 plotting compatibility patches."""
+
 from __future__ import annotations
 
 import matplotlib
@@ -33,4 +34,5 @@ def test_schemdraw_imports_on_modern_matplotlib():
     """schemdraw >=0.16 must import cleanly on matplotlib >=3.8."""
     from schemdraw import Drawing
     from schemdraw.flow import Arrow, Data, RoundBox, Subroutine
+
     assert Drawing is not None

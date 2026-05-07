@@ -2,25 +2,19 @@ import sys
 
 from pycaret.utils._show_versions import show_versions
 
-version_ = "3.4.0"
+version_ = "1.0.0"
 
 __version__ = version_
 
 __all__ = ["show_versions", "__version__"]
 
-# Pycaret only supports python 3.9, 3.10, 3.11, 3.12
-# This code is to avoid issues with python 3.7 or other not supported versions
-# example (see package versions): https://github.com/pycaret/pycaret/issues/3746
-
-if sys.version_info < (3, 9):
+# pycaret-ng targets Python 3.10+. The dep floors in pyproject.toml
+# implicitly gate the upper end. The 3.10 lower bound is forced by
+# imbalanced-learn>=0.14 (Phase 1's sklearn 1.6 floor required this
+# bump; older imbalanced-learn requires sklearn <1.5).
+if sys.version_info < (3, 10):
     raise RuntimeError(
-        "Pycaret only supports python 3.9, 3.10, 3.11, 3.12. Your actual Python version: ",
+        "pycaret-ng requires Python >= 3.10. Your actual Python version: ",
         sys.version_info,
-        "Please UPGRADE your Python version.",
-    )
-elif sys.version_info >= (3, 13):
-    raise RuntimeError(
-        "Pycaret only supports python 3.9, 3.10, 3.11, 3.12. Your actual Python version: ",
-        sys.version_info,
-        "Please DOWNGRADE your Python version.",
+        "Please upgrade your Python.",
     )

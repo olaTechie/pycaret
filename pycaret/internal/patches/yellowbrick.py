@@ -28,6 +28,7 @@ consumers because they import the symbols at module load time.
 
 Installation site: ``pycaret/internal/pycaret_experiment/tabular_experiment.py``.
 """
+
 from __future__ import annotations
 
 from sklearn.base import (

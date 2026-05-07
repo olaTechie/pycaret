@@ -1,7 +1,7 @@
 [project]
-name = "pycaret"
-version = "3.4.0"
-description = "PyCaret - An open source, low-code machine learning library in Python."
+name = "pycaret-ng"
+version = "1.0.0"
+description = "pycaret-ng — modernized soft-fork of PyCaret (low-code ML for Python 3.9–3.13, sklearn >=1.6, pandas >=2.2, modern sktime/matplotlib/yellowbrick)."
 readme = "README.md"
 keywords = [
   "data-mining",
@@ -23,7 +23,7 @@ maintainers = [
 authors = [
     { name = "pycaret developers" },
 ]
-requires-python = ">=3.9,<3.13"
+requires-python = ">=3.10"
 classifiers = [
   "Intended Audience :: Developers",
   "Intended Audience :: Science/Research",
@@ -34,10 +34,10 @@ classifiers = [
   "Operating System :: Unix",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Topic :: Scientific/Engineering",
   "Topic :: Scientific/Engineering :: Artificial Intelligence",
   "Topic :: Software Development",

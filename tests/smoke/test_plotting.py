@@ -13,6 +13,7 @@ This file is NOT discovered by `pytest tests/` (it lives under
     .venv-phase3/bin/python -m pytest --confcutdir=tests/smoke \\
         tests/smoke/test_plotting.py -v
 """
+
 from __future__ import annotations
 
 import pytest
@@ -22,8 +23,8 @@ from pycaret.clustering import ClusteringExperiment
 from pycaret.datasets import get_data
 from pycaret.regression import RegressionExperiment
 
-
 # --- Classification ----------------------------------------------------
+
 
 @pytest.fixture(scope="module")
 def clf_setup():
@@ -56,10 +57,27 @@ CLF_DEGRADED: set[str] = {
 
 CLF_PLOTS = sorted(
     [
-        "pipeline", "parameter", "auc", "confusion_matrix", "threshold",
-        "pr", "error", "class_report", "rfe", "learning", "manifold",
-        "calibration", "vc", "dimension", "feature", "feature_all",
-        "boundary", "lift", "gain", "tree", "ks",
+        "pipeline",
+        "parameter",
+        "auc",
+        "confusion_matrix",
+        "threshold",
+        "pr",
+        "error",
+        "class_report",
+        "rfe",
+        "learning",
+        "manifold",
+        "calibration",
+        "vc",
+        "dimension",
+        "feature",
+        "feature_all",
+        "boundary",
+        "lift",
+        "gain",
+        "tree",
+        "ks",
     ]
 )
 
@@ -74,6 +92,7 @@ def test_classification_plot(clf_setup, plot, tmp_path):
 
 
 # --- Regression --------------------------------------------------------
+
 
 @pytest.fixture(scope="module")
 def reg_setup():
@@ -94,15 +113,29 @@ def reg_setup():
 
 
 REG_DEGRADED: set[str] = {
-    # Row 23: requires `anywidget` (transitive plotly interactive renderer
-    # dep, not in pycaret's deps). Decision pending — see FAILURE_TAXONOMY.md.
+    # Row 23 (closed): requires `anywidget` (transitive plotly
+    # interactive-widget dep, not in pycaret-ng base deps). Lazy-import
+    # guard at tabular_experiment.py:residuals_interactive raises
+    # NotImplementedError with a clear `pip install anywidget` hint.
+    # Smoke skip stays — the harness intentionally doesn't install
+    # anywidget to verify the degrade path keeps user errors loud.
     "residuals_interactive",
 }
 
 REG_PLOTS = sorted(
     [
-        "pipeline", "parameter", "residuals", "error", "cooks", "rfe",
-        "learning", "manifold", "vc", "feature", "feature_all", "tree",
+        "pipeline",
+        "parameter",
+        "residuals",
+        "error",
+        "cooks",
+        "rfe",
+        "learning",
+        "manifold",
+        "vc",
+        "feature",
+        "feature_all",
+        "tree",
         "residuals_interactive",
     ]
 )
@@ -118,6 +151,7 @@ def test_regression_plot(reg_setup, plot, tmp_path):
 
 
 # --- Clustering --------------------------------------------------------
+
 
 @pytest.fixture(scope="module")
 def clu_setup():
@@ -142,7 +176,12 @@ CLU_DEGRADED: set[str] = {
 
 CLU_PLOTS = sorted(
     [
-        "pipeline", "cluster", "tsne", "elbow", "silhouette", "distance",
+        "pipeline",
+        "cluster",
+        "tsne",
+        "elbow",
+        "silhouette",
+        "distance",
         "distribution",
     ]
 )

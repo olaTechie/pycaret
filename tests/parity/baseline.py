@@ -4,6 +4,7 @@ Artifacts live under tests/parity/baselines/<version>/<dataset>/:
   - leaderboard.json — sorted compare_models() output.
   - predictions.npz  — per-model predictions + probabilities on the holdout.
 """
+
 from __future__ import annotations
 
 import json

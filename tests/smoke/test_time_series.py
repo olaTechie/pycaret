@@ -11,6 +11,7 @@ Run via:
     .venv-phase4/bin/python -m pytest --confcutdir=tests/smoke \\
         tests/smoke/test_time_series.py -v
 """
+
 from __future__ import annotations
 
 import pytest
@@ -56,8 +57,15 @@ TS_DEGRADED: set[str] = {
 # NotImplementedError raise — so we just don't list them here.
 TS_FORECASTERS = sorted(
     [
-        "naive", "snaive", "polytrend", "arima", "auto_arima",
-        "exp_smooth", "ets", "theta", "stlf",
+        "naive",
+        "snaive",
+        "polytrend",
+        "arima",
+        "auto_arima",
+        "exp_smooth",
+        "ets",
+        "theta",
+        "stlf",
         "lr_cds_dt",  # linear regression with conditional deseasonalizer
     ]
 )

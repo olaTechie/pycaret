@@ -7,6 +7,7 @@ Tolerances are the gate-B thresholds from the pycaret-ng spec:
 Per-estimator widening is allowed via PARITY_TOLERANCE_OVERRIDES and must
 be justified in docs/superpowers/agents/qa/phase-N-parity.md.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass

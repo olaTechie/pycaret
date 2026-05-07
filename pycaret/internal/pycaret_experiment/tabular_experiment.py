@@ -618,6 +618,25 @@ class _TabularExperiment(_PyCaretExperiment):
                     self.logger.info("Visual Rendered Successfully")
 
                 def residuals_interactive():
+                    # InteractiveResidualsPlot uses plotly's interactive
+                    # widget chain, which transitively requires `anywidget`
+                    # under modern plotly + Jupyter. Pycaret-ng does not
+                    # ship anywidget in base deps to keep the wheel light;
+                    # users can either `pip install anywidget` or use the
+                    # static `plot='residuals'` instead. See
+                    # docs/superpowers/agents/plotting-dev/DEGRADED.md.
+                    try:
+                        import anywidget  # noqa: F401
+                    except ImportError as exc:
+                        raise NotImplementedError(
+                            "plot='residuals_interactive' requires the "
+                            "optional `anywidget` package which pycaret-ng "
+                            "does not install by default. Either run "
+                            "`pip install anywidget` and retry, or use the "
+                            "static plot='residuals' instead. Tracked in "
+                            "docs/superpowers/agents/plotting-dev/DEGRADED.md."
+                        ) from exc
+
                     from pycaret.internal.plots.residual_plots import (
                         InteractiveResidualsPlot,
                     )
@@ -1133,7 +1152,9 @@ class _TabularExperiment(_PyCaretExperiment):
                         "the removed `interpolation=` kwarg. Tracked in "
                         "docs/superpowers/agents/plotting-dev/DEGRADED.md."
                     )
-                    from yellowbrick.cluster import InterclusterDistance  # noqa: F401  # kept for cherry-pick parity
+                    from yellowbrick.cluster import (
+                        InterclusterDistance,
+                    )  # noqa: F401  # kept for cherry-pick parity
 
                     try:
                         visualizer = InterclusterDistance(estimator, **plot_kwargs)
@@ -1261,7 +1282,9 @@ class _TabularExperiment(_PyCaretExperiment):
                             "Tracked in "
                             "docs/superpowers/agents/plotting-dev/DEGRADED.md."
                         )
-                        from yellowbrick.classifier import ClassPredictionError  # noqa: F401
+                        from yellowbrick.classifier import (
+                            ClassPredictionError,
+                        )  # noqa: F401
 
                         visualizer = ClassPredictionError(
                             estimator, random_state=self.seed, **plot_kwargs
@@ -2731,18 +2754,14 @@ EXPOSE {PORT}
 
 CMD ["uvicorn", "{API_NAME}:app", "--host", "0.0.0.0", "--port", "{PORT}"]
 
-""".format(
-            BASE_IMAGE=base_image, PORT=expose_port, API_NAME=api_name
-        )
+""".format(BASE_IMAGE=base_image, PORT=expose_port, API_NAME=api_name)
 
         with open("Dockerfile", "w") as f:
             f.write(docker)
 
-        print(
-            """Dockerfile and requirements.txt successfully created.
+        print("""Dockerfile and requirements.txt successfully created.
     To build image you have to run --> !docker image build -f "Dockerfile" -t IMAGE_NAME:IMAGE_TAG .
-            """
-        )
+            """)
 
     def _set_all_models(self) -> "_TabularExperiment":
         """Set all available models

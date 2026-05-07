@@ -3,6 +3,7 @@
 This test will SKIP cleanly until Task 12 builds the baseline artifacts.
 Once artifacts exist, it asserts metric absolute deltas are within tolerance.
 """
+
 from __future__ import annotations
 
 import pytest
@@ -28,9 +29,9 @@ def test_compare_models_leaderboard_parity(dataset_name, parity_config):
     current_by_model = {r["Model"]: r for r in current}
 
     missing = set(baseline_by_model) - set(current_by_model)
-    assert not missing, (
-        f"Models present in 3.4.0 but absent in current: {sorted(missing)}"
-    )
+    assert (
+        not missing
+    ), f"Models present in 3.4.0 but absent in current: {sorted(missing)}"
 
     for model, base_row in baseline_by_model.items():
         cur_row = current_by_model[model]
@@ -52,6 +53,7 @@ def _run_compare_models(X, y, task):
     """Run compare_models on current HEAD and return leaderboard as list of dicts."""
     if task == "classification":
         from pycaret.classification import ClassificationExperiment
+
         exp = ClassificationExperiment()
         exp.setup(
             data=_to_frame(X, y),
@@ -62,6 +64,7 @@ def _run_compare_models(X, y, task):
         )
     elif task == "regression":
         from pycaret.regression import RegressionExperiment
+
         exp = RegressionExperiment()
         exp.setup(
             data=_to_frame(X, y),

@@ -3,6 +3,7 @@
 Each loader returns (X: DataFrame, y: Series, task: str) deterministically
 so parity comparisons against frozen 3.4.0 baselines are reproducible.
 """
+
 from __future__ import annotations
 
 from typing import Callable, Dict, Tuple
@@ -30,6 +31,7 @@ def _load_california_housing() -> Tuple[pd.DataFrame, pd.Series, str]:
 
 def _load_credit() -> Tuple[pd.DataFrame, pd.Series, str]:
     from pycaret.datasets import get_data
+
     df = get_data("credit", verbose=False)
     y = df["default"].astype(int)
     X = df.drop(columns=["default"])
@@ -38,6 +40,7 @@ def _load_credit() -> Tuple[pd.DataFrame, pd.Series, str]:
 
 def _load_airline_passengers() -> Tuple[pd.DataFrame, pd.Series, str]:
     from pycaret.datasets import get_data
+
     df = get_data("airline", verbose=False)
     if isinstance(df, pd.Series):
         y = df.astype(float)

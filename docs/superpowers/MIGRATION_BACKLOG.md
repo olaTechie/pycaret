@@ -12,7 +12,7 @@ Synthesized from `FAILURE_TAXONOMY.md` at end of Phase 0.
 | pandas-dev | 4 (IDs 7, 8, 9, 11) | closed in Phase 2 |
 | plotting-dev | 6 (IDs 18, 20, 21, 22, 23, 24, 25) | 4 closed, 2 degraded, 1 open (23 anywidget) |
 | ts-dev | 3 (IDs 12, 13, 16) | all closed in Phase 4 (12 closed via graceful-disable; 13 closed via sktime unpin; 16 pycaret-side closed, pmdarima-side latent under sklearn <1.8 cap) |
-| release | 5 (IDs 1, 2, 10, 14, 19) | open — Phase 5 hygiene |
+| release | 5 (IDs 1, 2, 10, 14, 19) | rows 1, 10, 19 closed in Phase 5; row 2 holds (joblib FastMemorizedFunc — pin already in place from Phase 0); row 14 (joblib `Memory.bytes_limit`) latent until joblib `<1.5` cap can lift |
 
 Total: 14 seed rows + 11 empirical (rows 15–25). Phase 3 contributed rows 20–25 from the smoke-harness baseline.
 
@@ -22,7 +22,7 @@ Total: 14 seed rows + 11 empirical (rows 15–25). Phase 3 contributed rows 20�
 2. **Phase 2 — pandas/numpy** — rebases on Phase 1. Seed rows 7, 8, 9 (pandas 2.2 applymap + CoW) and 11 (numpy 2 scalar/API sweep) cover the core migration.
 3. **Phase 3 — plotting** — closed (PR pending). Empirical smoke baseline (commit `10901cd9`) added rows 20–25; rows 18, 20, 21, 22 closed; rows 24, 25 degraded (yellowbrick-internal bugs); row 23 (anywidget) remains open with decision deferred to Phase 5.
 4. **Phase 4 — time-series** — closed (PR pending). sktime unpin from `>=0.31.0,<0.31.1` to `>=0.31` was required (the prior pin capped sklearn at <1.6.0, conflicting with Phase 1's sklearn>=1.6 floor). Resolved to sktime 0.40.1 / pmdarima 2.0.4 / tbats 1.1.3 / statsmodels 0.14.6 / numpy 1.26.4 (resolver picked numpy 1 to satisfy tbats; pyproject `numpy>=1.26,<3` permits both). Rows 12, 13, 16 closed; auto_arima documented in DEGRADED.md as a sktime-drift smoke skip.
-5. **Phase 5 — release** — rename distribution to `pycaret-ng`, PyPI publish, upstream PRs. Seed rows 1, 2, 10, 14 cover py-version guard removal, joblib pins, `distutils.LooseVersion` removal, joblib 1.5 `Memory.bytes_limit` migration.
+5. **Phase 5 — release** — closed (PR pending). Distribution renamed to `pycaret-ng`, version bumped to 1.0.0, Python guard widened (closes row 1), `MIGRATION.md` authored, `release.yml` publish job wired, soft-dep test gating (closes row 19), README updated. Local build verification: `pycaret_ng-1.0.0-py3-none-any.whl` builds cleanly with correct metadata and resolves cleanly in a throwaway venv. PyPI publish requires user-action (pypi.org trusted-publisher configuration + tag push).
 
 ## Phase-start entry criteria
 

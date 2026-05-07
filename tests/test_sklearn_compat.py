@@ -1,4 +1,5 @@
 """Unit tests for pycaret.utils._sklearn_compat."""
+
 from __future__ import annotations
 
 import pytest
@@ -19,8 +20,7 @@ def test_get_base_scorer_class_is_sklearn_base_scorer():
     scorer = make_scorer(lambda y_true, y_pred: 0.0)
     cls = get_base_scorer_class()
     assert isinstance(scorer, cls), (
-        f"make_scorer() returned {type(scorer).__mro__}; "
-        f"shim returned {cls}"
+        f"make_scorer() returned {type(scorer).__mro__}; " f"shim returned {cls}"
     )
 
 
