@@ -121,3 +121,14 @@ Cherry-picked the Phase 4 pyproject install-resolution commits back to phase-3-p
 PR #3's diff now includes these one-line dep-floor changes from Phase 4. The phase boundary blurs slightly, but there's no other path: phase-3's CI cannot install pycaret without those lifts. Phase 4 and Phase 5 already had them via the linear stack.
 
 Smokes still 56/5/0 in 24.7s.
+
+## 2026-05-07 — CI unblock pass round 6 + cross-branch sync stopped
+
+Round 6 (`c4e94df2` after force-push of an earlier commit that accidentally swept in untracked working artifacts):
+1. **Black formatting**: 39 files reformatted (pycaret/ + tests/) with black 26.3.1. Fixes the "Code quality checks" job.
+2. **Drop Python 3.9 support**: `imbalanced-learn>=0.14` (required by Phase 1's sklearn 1.6 floor; older imblearn caps sklearn <1.5) needs Python >=3.10. The .github/workflows/test.yml matrix dropped 3.9 and added 3.13. pyproject.toml `requires-python` and pycaret/__init__.py runtime guard both raised to >=3.10. Programming Language :: Python :: 3.9 classifier removed.
+3. Extended .gitignore to permanently cover local working artifacts (mlflow.db, pycaret-plugin/, pycaret_ng.egg-info/, .claude/).
+
+**Cross-branch sync stopped at round 6.** Earlier rounds (1-5) cherry-picked each fix back to phase-3-plotting and phase-4-timeseries. Round 6's Python-guard / pyproject `requires-python` changes are Phase-5-only (those touch `pycaret/__init__.py` lines that were originally rewritten by `a848daa7`); cherry-picking them to phase-3/phase-4 hits merge conflicts and would force me to reconstruct partial commits per branch. Pragmatic call: stop cross-branch sync. PR #3 and PR #4 will continue to show red CI until they merge, then PR #4 retargets `modernize` (now including PR #3) and CI runs against the cumulative state — which has Phase 5's fixes by definition because Phase 5 has been continuously cherry-picking and is the most-up-to-date branch in the stack.
+
+Smokes still 56/5/0 in 24.8s.
