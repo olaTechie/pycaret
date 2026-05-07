@@ -11,7 +11,7 @@ Synthesized from `FAILURE_TAXONOMY.md` at end of Phase 0.
 | sklearn-dev | 4 (IDs 3, 4, 5, 6) | all closed in Phase 1 |
 | pandas-dev | 4 (IDs 7, 8, 9, 11) | closed in Phase 2 |
 | plotting-dev | 6 (IDs 18, 20, 21, 22, 23, 24, 25) | 4 closed, 2 degraded, 1 open (23 anywidget) |
-| ts-dev | 3 (IDs 12, 13, 16) | open — Phase 4 |
+| ts-dev | 3 (IDs 12, 13, 16) | all closed in Phase 4 (12 closed via graceful-disable; 13 closed via sktime unpin; 16 pycaret-side closed, pmdarima-side latent under sklearn <1.8 cap) |
 | release | 5 (IDs 1, 2, 10, 14, 19) | open — Phase 5 hygiene |
 
 Total: 14 seed rows + 11 empirical (rows 15–25). Phase 3 contributed rows 20–25 from the smoke-harness baseline.
@@ -21,7 +21,7 @@ Total: 14 seed rows + 11 empirical (rows 15–25). Phase 3 contributed rows 20�
 1. **Phase 1 — sklearn** — largest blast radius per spec; seed rows 3, 4, 5, 6 cover the category-encoders `Tags` import, `_PredictScorer` removal, tag API migration, and sklearn 1.6 symbol-move imports.
 2. **Phase 2 — pandas/numpy** — rebases on Phase 1. Seed rows 7, 8, 9 (pandas 2.2 applymap + CoW) and 11 (numpy 2 scalar/API sweep) cover the core migration.
 3. **Phase 3 — plotting** — closed (PR pending). Empirical smoke baseline (commit `10901cd9`) added rows 20–25; rows 18, 20, 21, 22 closed; rows 24, 25 degraded (yellowbrick-internal bugs); row 23 (anywidget) remains open with decision deferred to Phase 5.
-4. **Phase 4 — time-series** — rebases on 1-3. Seed rows 12 (tbats graceful-disable), 13 (sktime API drift) flag the two known risks. `DEGRADED.md` likely needed.
+4. **Phase 4 — time-series** — closed (PR pending). sktime unpin from `>=0.31.0,<0.31.1` to `>=0.31` was required (the prior pin capped sklearn at <1.6.0, conflicting with Phase 1's sklearn>=1.6 floor). Resolved to sktime 0.40.1 / pmdarima 2.0.4 / tbats 1.1.3 / statsmodels 0.14.6 / numpy 1.26.4 (resolver picked numpy 1 to satisfy tbats; pyproject `numpy>=1.26,<3` permits both). Rows 12, 13, 16 closed; auto_arima documented in DEGRADED.md as a sktime-drift smoke skip.
 5. **Phase 5 — release** — rename distribution to `pycaret-ng`, PyPI publish, upstream PRs. Seed rows 1, 2, 10, 14 cover py-version guard removal, joblib pins, `distutils.LooseVersion` removal, joblib 1.5 `Memory.bytes_limit` migration.
 
 ## Phase-start entry criteria
