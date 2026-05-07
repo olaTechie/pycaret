@@ -1,6 +1,6 @@
 # Migrating to pycaret-ng 1.0.0
 
-`pycaret-ng` is a soft-fork of [PyCaret 3.4.0](https://github.com/pycaret/pycaret) that resumes modernization on Python 3.9–3.13, modern scikit-learn / pandas / numpy, and the current sktime / pmdarima / matplotlib / yellowbrick. **The internal import path stays `pycaret`** so existing user code continues to run unchanged.
+`pycaret-ng` is a soft-fork of [PyCaret 3.4.0](https://github.com/pycaret/pycaret) that resumes modernization on Python 3.10–3.13, modern scikit-learn / pandas / numpy, and the current sktime / pmdarima / matplotlib / yellowbrick. **The internal import path stays `pycaret`** so existing user code continues to run unchanged.
 
 ## TL;DR
 
@@ -35,7 +35,7 @@ The optional extras list mirrors upstream pycaret 3.4.0 — same names, same con
 
 | Package | Before (pycaret 3.4.0) | After (pycaret-ng 1.0.0) | Phase that lifted it |
 |---------|------------------------|--------------------------|----------------------|
-| Python | `>=3.9,<3.13` | `>=3.9` (3.13 in CI) | Phase 5 |
+| Python | `>=3.9,<3.13` | `>=3.10` (3.10–3.13 in CI) | Phase 5 — 3.9 dropped in round 6 release-hygiene because imbalanced-learn ≥0.14 (required by sklearn 1.6) needs Python ≥3.10. |
 | scikit-learn | `<1.5` | `>=1.6,<2` | Phase 1 |
 | imbalanced-learn | `>=0.12,<0.14` | `>=0.14,<0.15` | Phase 1 |
 | category-encoders | `>=2.4` | `>=2.7,<3` | Phase 1 |
@@ -50,7 +50,9 @@ The optional extras list mirrors upstream pycaret 3.4.0 — same names, same con
 | yellowbrick | `>=1.4` | `>=1.4` (with pycaret-side patches) | Phase 3 |
 | joblib | `>=1.4.2,<1.5` | `>=1.4.2,<1.5` (held; row 14 deferred) | — |
 
-Tested combinations in CI: Python `{3.11, 3.12, 3.13}` × OS `{linux, macos}` against the floors above.
+Tested combinations in CI: Python `{3.10, 3.11, 3.12, 3.13}` × OS `{linux, macos, windows}` against the floors above.
+
+**Note on Python 3.9:** dropped in v1.0.0. Phase 1's sklearn ≥1.6 floor requires `imbalanced-learn>=0.14`, which itself requires Python ≥3.10. Older `imbalanced-learn` versions cap sklearn at `<1.5`, so Python 3.9 cannot satisfy both constraints simultaneously. Users on Python 3.9 should stay on upstream `pycaret==3.4.0` until they can upgrade their interpreter.
 
 ## Known limitations under modern deps
 
