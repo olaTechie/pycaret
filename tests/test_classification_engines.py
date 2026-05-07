@@ -1,6 +1,11 @@
 import pytest
 import sklearn
 
+# scikit-learn-intelex (sklearnex / daal4py) is x86_64-only — pycaret-ng's
+# pyproject excludes it on platform_machine != 'x86_64'. On macOS arm64 and
+# other non-x86_64 platforms the engine swap to "sklearnex" is impossible.
+pytest.importorskip("daal4py")
+
 import pycaret.classification
 import pycaret.datasets
 
