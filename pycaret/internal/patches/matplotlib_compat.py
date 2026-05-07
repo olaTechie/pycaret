@@ -8,6 +8,7 @@ functional on modern matplotlib.
 
 Loaded early via pycaret/internal/patches/__init__.py.
 """
+
 from __future__ import annotations
 
 import matplotlib.axes

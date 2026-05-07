@@ -1,5 +1,4 @@
-"""Module to test time_series models
-"""
+"""Module to test time_series models"""
 
 import pandas as pd  # type: ignore
 import pytest

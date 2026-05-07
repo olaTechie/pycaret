@@ -1152,7 +1152,9 @@ class _TabularExperiment(_PyCaretExperiment):
                         "the removed `interpolation=` kwarg. Tracked in "
                         "docs/superpowers/agents/plotting-dev/DEGRADED.md."
                     )
-                    from yellowbrick.cluster import InterclusterDistance  # noqa: F401  # kept for cherry-pick parity
+                    from yellowbrick.cluster import (
+                        InterclusterDistance,
+                    )  # noqa: F401  # kept for cherry-pick parity
 
                     try:
                         visualizer = InterclusterDistance(estimator, **plot_kwargs)
@@ -1280,7 +1282,9 @@ class _TabularExperiment(_PyCaretExperiment):
                             "Tracked in "
                             "docs/superpowers/agents/plotting-dev/DEGRADED.md."
                         )
-                        from yellowbrick.classifier import ClassPredictionError  # noqa: F401
+                        from yellowbrick.classifier import (
+                            ClassPredictionError,
+                        )  # noqa: F401
 
                         visualizer = ClassPredictionError(
                             estimator, random_state=self.seed, **plot_kwargs
@@ -2750,18 +2754,14 @@ EXPOSE {PORT}
 
 CMD ["uvicorn", "{API_NAME}:app", "--host", "0.0.0.0", "--port", "{PORT}"]
 
-""".format(
-            BASE_IMAGE=base_image, PORT=expose_port, API_NAME=api_name
-        )
+""".format(BASE_IMAGE=base_image, PORT=expose_port, API_NAME=api_name)
 
         with open("Dockerfile", "w") as f:
             f.write(docker)
 
-        print(
-            """Dockerfile and requirements.txt successfully created.
+        print("""Dockerfile and requirements.txt successfully created.
     To build image you have to run --> !docker image build -f "Dockerfile" -t IMAGE_NAME:IMAGE_TAG .
-            """
-        )
+            """)
 
     def _set_all_models(self) -> "_TabularExperiment":
         """Set all available models

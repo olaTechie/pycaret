@@ -42,3 +42,9 @@ nbtest1.ipynb
 .venv-phase2/
 .venv-phase3/
 .venv-phase4/
+
+# Local working artifacts (round 6 cleanup)
+.claude/
+mlflow.db
+pycaret-plugin/
+pycaret_ng.egg-info/

@@ -1154,6 +1154,7 @@ class BATSContainer(TimeSeriesContainer):
         # See docs/superpowers/agents/ts-dev/DEGRADED.md.
         try:
             from sktime.forecasting.bats import BATS  # type: ignore
+
             BATS()  # raise early if import works but instantiation fails
         except (ImportError, AttributeError, TypeError, ValueError) as exc:
             self.logger.warning(
@@ -1236,6 +1237,7 @@ class TBATSContainer(TimeSeriesContainer):
         # BATSContainer above. See docs/superpowers/agents/ts-dev/DEGRADED.md.
         try:
             from sktime.forecasting.tbats import TBATS
+
             TBATS()
         except (ImportError, AttributeError, TypeError, ValueError) as exc:
             self.logger.warning(

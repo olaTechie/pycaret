@@ -6,6 +6,7 @@ sites. Inspired by sktime PR #8546's dual-API tag inspection helper.
 
 Targets sklearn>=1.5,<2. Intentionally tolerant of 1.6/1.7 internal moves.
 """
+
 from __future__ import annotations
 
 from functools import lru_cache
@@ -21,6 +22,7 @@ def get_base_scorer_class() -> Type:
     """
     try:
         from sklearn.metrics._scorer import _BaseScorer
+
         return _BaseScorer
     except ImportError as e:
         raise ImportError(
@@ -39,6 +41,7 @@ def get_check_reg_targets():
     """
     try:
         from sklearn.metrics._regression import _check_reg_targets
+
         return _check_reg_targets
     except ImportError as e:
         raise ImportError(

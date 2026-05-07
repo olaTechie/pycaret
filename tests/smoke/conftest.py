@@ -10,6 +10,7 @@ protobuf >= 4.
 Used by tests/smoke/test_plotting.py (Phase 3) and
 tests/smoke/test_time_series.py (Phase 4).
 """
+
 import os
 
 # Pure-Python protobuf — must run before any package that imports

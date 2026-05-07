@@ -1,5 +1,4 @@
-"""Module to test time_series "MLflow" functionality
-"""
+"""Module to test time_series "MLflow" functionality"""
 
 from pycaret.time_series import TSForecastingExperiment
 

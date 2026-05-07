@@ -3,6 +3,7 @@
 Uses Spearman rank-correlation for continuous outputs and exact-match-rate
 for classification labels.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -58,9 +59,11 @@ def _predict_current(X, y, task, model_name):
     """Re-fit and predict with named model on current HEAD."""
     if task == "classification":
         from pycaret.classification import ClassificationExperiment
+
         exp = ClassificationExperiment()
     else:
         from pycaret.regression import RegressionExperiment
+
         exp = RegressionExperiment()
 
     df = X.copy()
