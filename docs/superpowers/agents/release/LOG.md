@@ -104,3 +104,20 @@ Verified locally with a fresh `.venv-py313`: full install resolves cleanly. Resu
 Cherry-picked `422472de` to `phase-3-plotting` (`729ff43a`) and `phase-4-timeseries` (`3d636100`). Smokes unchanged.
 
 The Python 3.13 path now exercises the Phase 4 graceful-disable code path for tbats — the dormancy from Phase 4 (numpy 1.26 picked locally) flips to active when 3.13 forces numpy 2.
+
+## 2026-05-07 — CI unblock pass round 3 + stacked-PR install fix
+
+Round 3 (`f3999f95` on phase-5; cherry-picked to phase-3 as `e2666507` and phase-4 as `7937b6fe`) added:
+- `shap>=0.47` floor lift (0.46 colorconv:819 calls `np.dtype(np.floating)` which numpy 2 rejects).
+- `brew install libomp` step in `ci.yml` for macOS (lightgbm couldn't load `lib_lightgbm.dylib`).
+- Lifted the `trio<0.25` cap (workaround for httpcore <1.0; obsolete now).
+
+After round 3, PR #5 went from 0 → 3 successes (out of 28 jobs). PR #3 stayed all-red because the sktime unpin is a Phase 4 commit (`3a1523eb`), and phase-3-plotting's pyproject still had `sktime>=0.31.0,<0.31.1` — which caps sklearn `<1.6.0` and conflicts with Phase 1's sklearn `>=1.6` floor (unsolvable resolver, same as the original Phase 4 install probe failure).
+
+Cherry-picked the Phase 4 pyproject install-resolution commits back to phase-3-plotting:
+- `9913a87d` (sktime unpin from `3a1523eb`)
+- `1f4b43cf` (statsmodels floor lift from `dc1fa7f4`)
+
+PR #3's diff now includes these one-line dep-floor changes from Phase 4. The phase boundary blurs slightly, but there's no other path: phase-3's CI cannot install pycaret without those lifts. Phase 4 and Phase 5 already had them via the linear stack.
+
+Smokes still 56/5/0 in 24.7s.
