@@ -28,7 +28,14 @@ def test_plot():
     exp = pycaret.regression.RegressionExperiment()
     available_plots = exp._available_plots
 
+    # See tests/test_classification_plots.py for the rationale —
+    # pycaret-ng degrades plots whose dispatch sites raise
+    # NotImplementedError. Skip those in the loop.
+    DEGRADED = {"residuals_interactive"}
+
     for plot in available_plots:
+        if plot in DEGRADED:
+            continue
         pycaret.regression.plot_model(model, plot=plot)
 
     models = [
