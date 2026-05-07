@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from tests.parity.datasets import REFERENCE_DATASETS, load_reference
+from .datasets import REFERENCE_DATASETS, load_reference
 
 
 @pytest.mark.parametrize("name", list(REFERENCE_DATASETS.keys()))

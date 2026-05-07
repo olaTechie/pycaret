@@ -4,23 +4,23 @@ Synthesized from `FAILURE_TAXONOMY.md` at end of Phase 0.
 
 **Note:** the current taxonomy is a **seed set** (14 rows, static-analysis + local reproduction). An empirical Cartographer dispatch remains deferred. This backlog will be refreshed when that run completes; phase ordering below is based on the seed set + the spec's locked phase sequence.
 
-## Row counts by owner (seed set only)
+## Row counts by owner (post-Phase-3)
 
-| Owner agent | Rows | Share |
-|-------------|------|-------|
-| sklearn-dev | 4 (IDs 3, 4, 5, 6) | 29% |
-| pandas-dev | 4 (IDs 7, 8, 9, 11) | 29% |
-| plotting-dev | 0 | 0% |
-| ts-dev | 2 (IDs 12, 13) | 14% |
-| release | 4 (IDs 1, 2, 10, 14) | 29% |
+| Owner agent | Rows | Status |
+|-------------|------|--------|
+| sklearn-dev | 4 (IDs 3, 4, 5, 6) | all closed in Phase 1 |
+| pandas-dev | 4 (IDs 7, 8, 9, 11) | closed in Phase 2 |
+| plotting-dev | 6 (IDs 18, 20, 21, 22, 23, 24, 25) | 4 closed, 2 degraded, 1 open (23 anywidget) |
+| ts-dev | 3 (IDs 12, 13, 16) | open — Phase 4 |
+| release | 5 (IDs 1, 2, 10, 14, 19) | open — Phase 5 hygiene |
 
-Total seed rows: 14. Empirical run expected to multiply counts ≥ 5×.
+Total: 14 seed rows + 11 empirical (rows 15–25). Phase 3 contributed rows 20–25 from the smoke-harness baseline.
 
 ## Phase ordering (locked per design spec)
 
 1. **Phase 1 — sklearn** — largest blast radius per spec; seed rows 3, 4, 5, 6 cover the category-encoders `Tags` import, `_PredictScorer` removal, tag API migration, and sklearn 1.6 symbol-move imports.
 2. **Phase 2 — pandas/numpy** — rebases on Phase 1. Seed rows 7, 8, 9 (pandas 2.2 applymap + CoW) and 11 (numpy 2 scalar/API sweep) cover the core migration.
-3. **Phase 3 — plotting** — may run parallel to Phase 2 per spec. No seed rows yet; Cartographer run needed.
+3. **Phase 3 — plotting** — closed (PR pending). Empirical smoke baseline (commit `10901cd9`) added rows 20–25; rows 18, 20, 21, 22 closed; rows 24, 25 degraded (yellowbrick-internal bugs); row 23 (anywidget) remains open with decision deferred to Phase 5.
 4. **Phase 4 — time-series** — rebases on 1-3. Seed rows 12 (tbats graceful-disable), 13 (sktime API drift) flag the two known risks. `DEGRADED.md` likely needed.
 5. **Phase 5 — release** — rename distribution to `pycaret-ng`, PyPI publish, upstream PRs. Seed rows 1, 2, 10, 14 cover py-version guard removal, joblib pins, `distutils.LooseVersion` removal, joblib 1.5 `Memory.bytes_limit` migration.
 

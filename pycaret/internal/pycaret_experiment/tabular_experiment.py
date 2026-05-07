@@ -4,6 +4,7 @@ import os
 import random
 import secrets
 import traceback
+from contextlib import ExitStack
 from copy import deepcopy
 from typing import Any, Dict, List, Optional, Tuple, Union
 from unittest.mock import patch
@@ -533,10 +534,42 @@ class _TabularExperiment(_PyCaretExperiment):
             "yellowbrick.utils.types.is_estimator",
             pycaret.internal.patches.yellowbrick.is_estimator,
         ):
-            with patch(
-                "yellowbrick.utils.helpers.is_estimator",
-                pycaret.internal.patches.yellowbrick.is_estimator,
-            ):
+            with ExitStack() as _yb_stack:
+                # Pipeline-aware shims for yellowbrick's role-detection.
+                # See pycaret/internal/patches/yellowbrick.py and
+                # FAILURE_TAXONOMY rows 18 (clf), 21 (reg), 22 (clu).
+                # Patches target each consumer module's local binding
+                # (yellowbrick base classes do `from yellowbrick.utils
+                # import is{X}` at import time, so the source-module
+                # patch alone wouldn't reach them).
+                _yb_patches = (
+                    (
+                        "yellowbrick.utils.helpers.is_estimator",
+                        pycaret.internal.patches.yellowbrick.is_estimator,
+                    ),
+                    (
+                        "yellowbrick.classifier.base.isclassifier",
+                        pycaret.internal.patches.yellowbrick.is_classifier,
+                    ),
+                    (
+                        "yellowbrick.classifier.threshold.is_classifier",
+                        pycaret.internal.patches.yellowbrick.is_classifier,
+                    ),
+                    (
+                        "yellowbrick.model_selection.importances.is_classifier",
+                        pycaret.internal.patches.yellowbrick.is_classifier,
+                    ),
+                    (
+                        "yellowbrick.regressor.base.isregressor",
+                        pycaret.internal.patches.yellowbrick.is_regressor,
+                    ),
+                    (
+                        "yellowbrick.cluster.base.isclusterer",
+                        pycaret.internal.patches.yellowbrick.is_clusterer,
+                    ),
+                )
+                for _yb_target, _yb_replacement in _yb_patches:
+                    _yb_stack.enter_context(patch(_yb_target, _yb_replacement))
                 _base_dpi = 100
 
                 def pipeline():
@@ -566,7 +599,7 @@ class _TabularExperiment(_PyCaretExperiment):
                             figsize=((2 + len(self.pipeline) * 5), 6)
                         )
 
-                        d.draw(ax=ax, showframe=False, show=False)
+                        d.draw(canvas=ax, show=False)
                         ax.set_aspect("equal")
                         plt.axis("off")
                         plt.tight_layout()
@@ -1093,7 +1126,14 @@ class _TabularExperiment(_PyCaretExperiment):
                         raise TypeError("Plot Type not supported for this model.")
 
                 def distance():
-                    from yellowbrick.cluster import InterclusterDistance
+                    raise NotImplementedError(
+                        "plot='distance' is temporarily disabled in pycaret-ng "
+                        "under numpy>=2 / yellowbrick>=1.5: yellowbrick's "
+                        "InterclusterDistance still calls np.percentile with "
+                        "the removed `interpolation=` kwarg. Tracked in "
+                        "docs/superpowers/agents/plotting-dev/DEGRADED.md."
+                    )
+                    from yellowbrick.cluster import InterclusterDistance  # noqa: F401  # kept for cherry-pick parity
 
                     try:
                         visualizer = InterclusterDistance(estimator, **plot_kwargs)
@@ -1211,7 +1251,17 @@ class _TabularExperiment(_PyCaretExperiment):
 
                 def error():
                     if self._ml_usecase == MLUsecase.CLASSIFICATION:
-                        from yellowbrick.classifier import ClassPredictionError
+                        raise NotImplementedError(
+                            "plot='error' (classification) is temporarily "
+                            "disabled in pycaret-ng under sklearn>=1.6 / "
+                            "yellowbrick>=1.5: yellowbrick's "
+                            "ClassPredictionError unpacks a 3-tuple from a "
+                            "sklearn helper that now returns a different "
+                            "shape. Regression 'error' is unaffected. "
+                            "Tracked in "
+                            "docs/superpowers/agents/plotting-dev/DEGRADED.md."
+                        )
+                        from yellowbrick.classifier import ClassPredictionError  # noqa: F401
 
                         visualizer = ClassPredictionError(
                             estimator, random_state=self.seed, **plot_kwargs

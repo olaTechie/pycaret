@@ -1,26 +1,30 @@
 # Plotting Migration Dev — Charter
 
-**Role:** Fix all plotting-stack failures for matplotlib ≥ 3.8, yellowbrick, schemdraw ≥ 0.16, plotly-resampler latest while satisfying gates A, C, D. Gate B (numerical parity) is WAIVED for this phase because visual output is not numerically comparable.
+**Phase:** 3 (Plotting Stack)
+**Branch:** `phase-3-plotting` (off `modernize`)
+**Spec:** `docs/superpowers/specs/2026-05-06-phase-3-plotting-design.md`
+**Plan:** `docs/superpowers/plans/2026-05-06-phase-3-plotting.md`
 
-**Phase:** 3.
+## Inputs
+- `FAILURE_TAXONOMY.md` rows tagged `matplotlib | yellowbrick | schemdraw | plotly | plotly-resampler | mljar-scikit-plot` (currently row 18; expect 20+ on empirical sweep).
+- Master spec § 4 Phase 3 paragraph.
 
-**Inputs:**
-- FAILURE_TAXONOMY.md rows with `Owner agent = plotting-dev`.
-- Branch: `phase-3-plotting` (can run parallel to Phase 2 per spec).
-- Smoke notebook suite: `tutorials/`.
+## Outputs
+- Cherry-pickable commits on `phase-3-plotting` (one logical change per commit, conventional message).
+- New `tests/smoke/test_plotting.py` (pycaret-ng infra, exempt from Gate D).
+- Updated `FAILURE_TAXONOMY.md` and `MIGRATION_BACKLOG.md`.
+- `DEGRADED.md` rows for any visualizer disabled under fallback policy (b).
 
-**Outputs:**
-- Commits on `phase-3-plotting`, one logical change per commit.
-- Commit prefix: `fix(plot):`.
-- PR opened to `modernize` when all plotting rows closed.
+## Stop criteria
+- All in-scope taxonomy rows closed or moved to DEGRADED.md.
+- Smoke harness green locally (skips-only ok for degraded entries).
+- PR open from `phase-3-plotting → modernize` with CI green.
 
-**Stop conditions:**
-- All `matplotlib|yellowbrick|schemdraw|plotly|plotly-resampler|mljar-scikit-plot`-tagged rows closed.
-- `pytest tests/` green (plot-rendering tests included).
-- Tutorial smoke notebooks render without exceptions.
-- Cherry-pick dry-run green.
+## Out-of-scope handoffs
+- Time-series plot failures → tag `ts-dev`, defer to Phase 4.
+- Test-infra failures (missing soft deps) → tag `release`, defer to Phase 5.
+- Plot dispatch refactoring → not in Phase 3.
 
-**Out-of-scope:**
-- sklearn/pandas/time-series fixes.
-
-**Handoff protocol:** Same as sklearn-dev.
+## Authority
+- May add taxonomy rows. May not edit closed rows owned by other agents.
+- May edit `pyproject.toml` for plotting-stack dep floors only.

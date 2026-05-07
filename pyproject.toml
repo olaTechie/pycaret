@@ -52,7 +52,7 @@ dependencies = [
   "numpy>=1.26,<3",
   "pandas>=2.2,<3",
   "jinja2>=3",
-  "scipy>=1.6.1,<=1.11.4",  # to fix later (
+  "scipy>=1.11,<2",  # 1.11.4 had no Python 3.13 wheel; lifted in Phase 5 release hygiene.
   "joblib>=1.4.2,<1.5",
   "scikit-learn>=1.6,<2",
   "pyod>=1.1.3",
@@ -69,19 +69,19 @@ dependencies = [
   "deprecation>=2.1.0",
   "xxhash",
   "wurlitzer; platform_system != 'Windows'",
-  "trio>=0.22.0,<0.25.0",  # fixes problems about third-party packages, remove after httpcore 1.05
+  "trio>=0.22.0",  # cap removed: original workaround was for httpcore <1.0; modern httpcore handles trio cleanly. Lift unblocks trio on Python 3.13.
   "setuptools; python_version>='3.12'",
   # Plotting
-  "matplotlib<3.8.0",  # stem(..., use_line_collection=False) is no longer supported.
-  "mljar-scikit-plot",  # this is a updated version of original scikit-plot
+  "matplotlib>=3.8",
+  "mljar-scikit-plot",
   "yellowbrick>=1.4",
   "plotly>=5.14.0",
   "kaleido>=0.2.1",
-  "schemdraw==0.15",  # 0.16 only supports Python >3.8
+  "schemdraw>=0.16",
   "plotly-resampler>=0.8.3.1",
   # Time-series
-  "statsmodels>=0.12.1",
-  "sktime>=0.31.0,<0.31.1",
+  "statsmodels>=0.14,<1",
+  "sktime>=0.31",
   "tbats>=1.1.3",
   "pmdarima>=2.0.4",
 ]
@@ -104,11 +104,11 @@ dependencies = [
 # users can install via "pip install pycaret[full]"
 #
 full = [
-  "shap>=0.44.0,<0.47.0",
+  "shap>=0.47",  # 0.46 colorconv:819 calls np.dtype(np.floating) which numpy 2 rejects.
   "interpret>=0.2.7",
   "umap-learn>=0.5.2",
   "pyyaml",
-  "ydata-profiling>=4.3.1",
+  "ydata-profiling>=4.18",  # Pre-4.18 requires htmlmin which fails to build on Python 3.13 (cgi module removed).
   "explainerdashboard>=0.3.8",  # For dashboard method
   "fairlearn==0.7.0",  # For check_fairness method
   "xgboost>=2.0.0",
@@ -116,7 +116,7 @@ full = [
   "kmodes>=0.11.1",
   "mlxtend>=0.19.0",
   "statsforecast<1.8.0,>1.6",
-  "scikit-learn-intelex<2024.7.0; platform_machine == 'x86_64' or platform_machine == 'AMD64'",
+  "scikit-learn-intelex>=2025.0; platform_machine == 'x86_64' or platform_machine == 'AMD64'",  # 2024.x bundled an older daal4py that imports sklearn.utils._joblib (removed in sklearn 1.6).
   "tune-sklearn",
   "ray[tune]",
   "hyperopt>=0.2.7",
@@ -148,11 +148,11 @@ full = [
 ]
 
 analysis = [
-  "shap>=0.44.0,<0.47.0",
+  "shap>=0.47",  # 0.46 colorconv:819 calls np.dtype(np.floating) which numpy 2 rejects.
   "interpret>=0.2.7",
   "umap-learn>=0.5.2",
   "pyyaml",
-  "ydata-profiling>=4.3.1",
+  "ydata-profiling>=4.18",  # Pre-4.18 requires htmlmin which fails to build on Python 3.13 (cgi module removed).
   "explainerdashboard>=0.3.8",  # For dashboard method
   "fairlearn==0.7.0",  # For check_fairness method
 ]
@@ -163,7 +163,7 @@ models = [
   "kmodes>=0.11.1",
   "mlxtend>=0.19.0",
   "statsforecast<1.8.0,>1.6",
-  "scikit-learn-intelex<2024.7.0; platform_machine == 'x86_64' or platform_machine == 'AMD64'",
+  "scikit-learn-intelex>=2025.0; platform_machine == 'x86_64' or platform_machine == 'AMD64'",  # 2024.x bundled an older daal4py that imports sklearn.utils._joblib (removed in sklearn 1.6).
 ]
 
 tuners = [
@@ -234,3 +234,9 @@ requires = [
 
 [tool.setuptools.packages.find]
 exclude = ["tests", "tests.*"]
+
+# uv-specific: declare missing build-time dependencies for transitive
+# packages that fail under uv's strict PEP 517 build isolation. pip's
+# legacy resolver tolerated these; uv requires them to be explicit.
+[tool.uv.extra-build-dependencies]
+pmdarima = ["numpy", "setuptools", "cython"]
