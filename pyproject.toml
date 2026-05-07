@@ -70,7 +70,7 @@ dependencies = [
   "deprecation>=2.1.0",
   "xxhash",
   "wurlitzer; platform_system != 'Windows'",
-  "trio>=0.22.0,<0.25.0",  # fixes problems about third-party packages, remove after httpcore 1.05
+  "trio>=0.22.0",  # cap removed: original workaround was for httpcore <1.0; modern httpcore handles trio cleanly. Lift unblocks trio on Python 3.13.
   "setuptools; python_version>='3.12'",
   # Plotting
   "matplotlib>=3.8",
@@ -105,7 +105,7 @@ dependencies = [
 # users can install via "pip install pycaret[full]"
 #
 full = [
-  "shap>=0.44.0,<0.47.0",
+  "shap>=0.47",  # 0.46 colorconv:819 calls np.dtype(np.floating) which numpy 2 rejects.
   "interpret>=0.2.7",
   "umap-learn>=0.5.2",
   "pyyaml",
@@ -149,7 +149,7 @@ full = [
 ]
 
 analysis = [
-  "shap>=0.44.0,<0.47.0",
+  "shap>=0.47",  # 0.46 colorconv:819 calls np.dtype(np.floating) which numpy 2 rejects.
   "interpret>=0.2.7",
   "umap-learn>=0.5.2",
   "pyyaml",
