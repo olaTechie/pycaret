@@ -33,7 +33,16 @@ def test_plot():
     exp = pycaret.classification.ClassificationExperiment()
     available_plots = exp._available_plots
 
+    # pycaret-ng degrades a small set of plots that depend on third-party
+    # libraries with sklearn-1.6 / numpy-2 incompatibilities. The dispatch
+    # sites raise NotImplementedError; skip them in the loop. Mirrors the
+    # CLF_DEGRADED set in tests/smoke/test_plotting.py and the rows in
+    # docs/superpowers/agents/plotting-dev/DEGRADED.md.
+    DEGRADED = {"error"}
+
     for plot in available_plots:
+        if plot in DEGRADED:
+            continue
         pycaret.classification.plot_model(model, plot=plot)
 
     models = [
